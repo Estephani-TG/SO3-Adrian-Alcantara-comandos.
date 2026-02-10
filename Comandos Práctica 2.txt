@@ -1,0 +1,194 @@
+   Comandos Práctica 1:
+ 
+    1  nmcli connectio show
+    2  nmcli connection modify ens160 ipv4.method auto
+    3  nmcli connection down ens160
+    4  nmcli connection up ens160
+    5  nmcli connection up ens160
+    6  nmcli connection show
+    7  nmcli connection modify ens160 ipv4.method auto
+    8  nmcli connection up ens160
+    9  ip a
+   10  ipp route
+   11  ip route
+   12  nmcli connection modify ens160 ipv4.method manual ipv4.addresses 192.168.1.6/24 ipv4.gateway 192.168.1.1 ipv4.dns 8.8.8.8 8.8.4.4
+   13  nmcli connection modify ens160 ipv4.method manual ipv4.addresses 192.168.1.6/24 ipv4.gateway 192.168.1.1 ipv4.dns "8.8.8.8 8.8.4.4"
+   14  nmcli connection up ens160
+   15  ip a
+   16  resolvctl status
+   17  resolvectl status
+   18  cat /etc/resolv.conf
+   19  nmtui
+   20  cd /etc/NetworkManager/system-connections
+   21  ls
+   22  nano /etc/NetworkManager/system-connections/ensl160.nmconnection
+   23  sudo nano ens160.nmconnection
+   24  sytemtl restart NetworkManager
+   25  sytemtl restart Network Manager
+   26  systemctl restart Network Manager
+   27  systemctl restart NetworkManager
+   28  ip a
+   29  sudo nano ens160.nmconnection
+   30  ip a
+   31  sudo nano ens160.nmconnection
+   32  systemctl restart NetworkManager
+   33  ip a
+   34  ip addr flush dev ens160
+   35  ip addr add 192.168.1.9/24 dev ens160
+   36  ip add default via 192.168.1.1
+   37  ip route add default via 192.168.1.1
+   38  resolvectl dns ens160 8.8.8.8 8.8.4.4
+   39  nano /etc/resolv.conf
+   40  pin google.com
+   41  ping google.com
+   42  history
+   43  adduser Estephani
+   44  usermod -aG sudo Estephani
+   45  deluser Estephani
+   46  sudoo deluser Estephani
+   47  sudo deluser Estephani
+   48  userdel Estephani
+   49  clear
+   50  adduser Estephani
+   51  clear
+   52  sudo adduser Estephani
+   53  sudo userdel Estephani
+   54  clear
+   55  adduser Estephani
+   56  userdel -r Estephani
+   57  sudo userdel Estephani
+   58  clear
+   59  adduser Estephani
+   60  usermod -aG wheel Estephani
+   61  groups Estephani
+   62  groupadd guest
+   63  adduser Pablito
+   64  usermod -aG guest Pablito
+   65  groups Pablito
+   66  userdel Pablito
+   67  userdel -r Pablito
+   68  groupdel guest
+   69  getent group guest
+   70  getent passwd Pablito
+   71  history
+   72  mkdir materia
+   73  cd materia
+   74  vi Estudiantes.txt
+   75  ls -l Estephani.txt
+   76  ls -l Estudiantes.txt
+   77  chmod 700 Estudiantes.txt
+   78  ls -l Estudiantes.txt
+   79  chmod 070 Estudiantes.txt
+   80  ls -l Estudiantes.txt
+   81  cd ..
+   82  mkdir materia2
+   83  cp materia/Estudiantes.txt materia2/
+   84  cd materia2
+   85  ls
+   86  rm -r materia
+   87  cd ..
+   88  rm -r materia
+   89  ls
+   90  history
+   91  nmcli con show
+   92  nmcli con modify ens160 ipv4.method auto
+   93  nmcli con up ens160
+   94  ip a
+   95  ip route
+   96  ping -c 3 8.8.8.8
+   97  nmcli con mod ens160 ipv4.method auto
+   98  nmcli con mod ens160 ipv4.addresses ""
+   99  nmcli con down ens160
+  100  nmcli con up ens160
+  101  ip a
+  102  ip route
+  103  nmcli con delete ens160
+  104  nmcli con add type ethernet ifname ens160 con-name ens160 ipv4.method auto
+  105  nmcli con up ens160
+  106  ip a
+  107  ip route
+  108  ping -c 3 8.8.8.8
+  109  subscription-manager register
+  110  subscription-manager register
+  111  subscription-manager register
+  112  subscription-manager register
+  113  subscription-manager attach --auto
+  114  dnf repolist
+  115  clear
+  116  dnf update
+  117  dnf upgrade
+  118  dnf repolist
+  119  dnf search bashtop
+  120  git clone https://github.com/aristocratos/bashtop.git
+  121  dnf install git -y
+  122  git clone https://github.com/aristocratos/bashtop.git
+  123  ls
+  124  cd bashtop
+  125  make intall
+  126  make install
+  127  bashtop
+  128  ./bashtop
+  129  dnf remove bashtop
+  130  dnf autoremove
+  131  ls /etc/bashtop*
+  132  ls /etc | grep -i bashtop
+  133  ls -l /etc/bashtop*
+  134  dnf list installed | grep -i bashtop
+  135  which bashtop
+  136  date
+
+
+================================================================================================
+
+Comandos Práctica 2:
+
+  140  sudo su
+  141  nano crontab -e
+  142  nano crontab -e
+  143  systemctl start atd
+  144  systemctl enable atd
+  145  ls /tmp
+  146  echo "rm -rf /tmp/*" | at now +1 minute
+  147  ls /tmp
+ 
+================================================================================================
+
+Comandos Práctica 3:
+
+  149  lsblk
+  150  fdisk /dev/nvme0n2
+  151  lsblk
+  152  mkfs.xfs /dev/nvme0n2p1
+  153  mkfs.ext4 /dev/nvme0n2p1
+  154  psw
+  155  pwd
+  156  ls
+  157  cd Escritorio
+  158  mkdir datos
+  159  mount /dev/nvme0n2p1 /home/egalan/datos
+  160  ls
+  161  cd datos
+  162  touch AdrianAlcantara.txt
+  163  ls
+  164  cd ..
+  165  unmount /dev/nvme0n2p1
+  166  umount /dev/nvme0n2p1
+  167  mount /dev/nvme0n2p1 /mnt
+  168  cd /mnt
+  169  ls
+  170  cd ..
+  171  ls
+  172  umount /mnt
+  173  mkdir /home/egalan/Escritorio/datos
+  174  mount /dev/nvme0n2p1 /home/egalan/Escritorio/datos
+  175  cd /home/egalan/Escritorio/datos
+  176  ls
+  177  touch AdrianAlcantara.txt
+  178  ls
+  179  umount /home/egalan/Escritorio/datos
+  180  cd ..
+  181  umount /home/egalan/Escritorio/datos
+  182  mount /dev/nvme0n2p1 /mnt
+  183  ls /mnt
+
+
