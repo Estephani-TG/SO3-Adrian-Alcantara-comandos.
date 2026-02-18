@@ -1,0 +1,46 @@
+Practica 1:
+
+185  sudo nano /etc/default/grub
+186  sudo grub2-mkconfig -o /boot/grub2/grub.cfg
+
+===========================================================================
+
+Practica 2:
+
+  190  nano backup_hom.sh
+  191  bash backup_hom.sh
+  192  nano backup_hom.sh
+  193  bash backup_hom.sh
+  194  ./backup_hom.sh
+  195  chmod +x backup_hom.sh
+  196  ./backup_hom.sh
+  197  nano ifconfig_Escritorio.sh
+  198  chmod +x ifconfig_Escritorio.sh
+  199  ./ifconfig_Escritorio.sh
+  200  nano ifconfig_Escritorio.sh
+  201  ./ifconfig_Escritorio.sh
+  202  ls ~/Escritorio
+
+==========================================================================
+
+Practica 3. Comandos en RHEL:
+
+  205  ping 192.169.1.4
+  206  ip a
+  207  clear
+  208  sudo dnf install openssh-server -y
+  209  sudo systemctl start sshd
+  210  sudo systemctl enable sshd
+  211  sudo systemctl status sshd
+  212  mkdir .ssh
+  213  cd .ssh
+  214  sudo nano authorized_keys
+
+  En Windows:
+
+  ipconfig
+  ping 192.168.1.20
+  ssh egalan@192.168.1.20
+  ssh-keygen
+  notepad C:\Users\User/.ssh/id_ed25519.pub
+  ssh egalan@192.168.1.20
