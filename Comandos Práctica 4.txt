@@ -1,0 +1,75 @@
+==============================================================================================
+Comandos Práctica 1:.
+==============================================================================================
+
+  218  sudo dnf install httpd -y
+  219  systemctl start httpd
+  220  systemctl enable httpd
+  221  systemctl status httpd
+  222  sudo firewall-cmd --permanent --add-service=http
+  223  sudo firewall-cmd --permanent --add-port=8080/tcp
+  224  sudo firewall-cmd --reload
+  225  sudo mkadir -p /var/www/HolaMundo
+  226  sudo mkdir -p /var/www/HolaMundo
+  227  sudo nano /var/www/HolaMundo/index.html
+  228  Sudo chown -R apache:apache /var/www/HolaMundo
+  229  sudo chown -R apache:apache /var/www/HolaMundo
+  230  sudo chmod -R 755 /var/www/HolaMundo
+  231  sudo nano /etc/httpd/conf.d/HolaMundo.conf
+  232  sudo mkdir -p /var/www/datos
+  233  sudo nano /var/www/datos/index.html
+  234  Sudo chown -R apache:apache /var/www/datos
+  235  sudo chown -R apache:apache /var/www/datos
+  236  sudo chmod -R 755 /var/www/datos
+  237  sudo nano /etc/httpd/conf/httpd.conf
+  238  sudo nano /etc/httpd/conf.d/datos.conf
+  239  sudo systemctl restart httpd
+  240  systemctl status httpd
+  241  sudo nano /etc/httpd/conf.d/holamundo.conf
+  242  sudo systemctl restart httpd
+  243  sudo nano /etc/httpd/conf.d/HolaMundo.conf
+  244  sudo systemctl restart httpd
+  245  ip a
+  246  systemctl status httpd
+  247  ls -ld /var/www/holamundo
+  248  ls -ld /var/www/HolaMundo
+  249  sudo nano /etc/httpd/conf.d/HolaMundo.conf
+  250  sudo systemctl restart httpd
+  251  ip a
+  252  curl http://127.0.0.1
+  253  sudo nano /etc/httpd/conf/httpd.conf
+  254  sudo apachectl configtest
+  255  sudo systemctl restart httpd
+  256  curl http://127.0.0.1
+  257  curl http://127.0.0.1:8080
+  258  date
+  259  history
+
+===========================================================================================
+Comandos Practica 2:
+===========================================================================================
+
+261  dnf install postfix s-nail cyrus-sasl cyrus-sasl-plain -y
+  262  systemctl enable --now postfix
+  263  systemctl status postfix
+  264  nano etc/postfix/main.cf
+  265  nano /etc/postfix/main.cf
+  266  nano /etc/postfix/sasl_passwd
+  267  postmap /etc/postfix/sasl_passwd
+  268  ls -l /etc/postfix/sasl_passwd*
+  269  chmod 600 /etc/postfix/sasl_passwd /etc/postfix/sasl_passwd.db
+  270  chown root:root /etc/postfix/sasl_passwd /etc/postfix/sasl_passwd.db
+  271  postmap /var/lib/postfix/smtp_scache
+  272  mkdir -p /var/lib/postfix
+  273  postmap /var/lib/postfix/smtp_scache
+  274  postmap hash:/var/lib/postfix/smtp_scache
+  275  postmap hash:/var/lib/postfix/smtp_scache
+  276  clear
+  277  systemctl restart postfix
+  278  systemctl status postfix
+  279  echo "Correo de prueba para practica 2" | mail -s "Prueba postfix" estephanitavarezgalan@gmail.com
+  280  echo "Correo de prueba para practica 2" | mail -s "Prueba postfix" estephanitavarezgalan@gmail.com
+  281  tail -f /var/log/maillog
+  282  echo "Estudiante: Estephani Tavarez Galan Matricula: 20250723" | mail -s "MambruSeFueALaGuerra" os3conadrian@gmail.com
+  283  tail -f /var/log/maillog
+  284  date
