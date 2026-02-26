@@ -73,3 +73,23 @@ Comandos Practica 2:
   282  echo "Estudiante: Estephani Tavarez Galan Matricula: 20250723" | mail -s "MambruSeFueALaGuerra" os3conadrian@gmail.com
   283  tail -f /var/log/maillog
   284  date
+  
+ ==============================================================================================
+ Comandos Practica 3:
+ ==============================================================================================
+
+  301  sudo dnf install cups -y
+  302  sudo systemctl enable --now cups
+  303  systemctl status cups
+  304  sudo dnf install cups-pdf -y
+  305  sudo firewall-cmd --add-service=ipp --permanent
+  306  sudo firewall-cmd --reload
+  307  sudo firewall-cmd --list-all
+  308  sudo nano /etc/cups/cupsd.conf
+  309  sudo cupsctl --remote-admin --remote-any --share-printers
+  310  sudo systemctl restart cups
+  311  ls /var/spool/cups-pdf/
+  312  date
+
+
+
