@@ -1,0 +1,454 @@
+============================================================================================
+Comandos Laboratorio 6.1: Cifrado
+============================================================================================
+
+  # Instalamos la herramienta GnuPG para trabajar con cifrado y claves
+sudo dnf install gnupg2 -y
+
+# Generamos un nuevo par de claves (pública y privada)
+gpg --full-generate-key
+
+# Creamos un directorio donde guardaremos el archivo a cifrar
+mkdir micifrado
+
+# Entramos al directorio
+cd micifrado
+
+# Creamos un archivo de texto con un mensaje
+echo "El es el poderoso de israel" > secreto.txt
+
+# Listamos los archivos del directorio
+ls
+
+# Mostramos el contenido del archivo
+cat secreto.txt
+
+# Mostramos la ruta actual
+pwd
+
+# Volvemos al directorio anterior
+cd ..
+
+# Intento incorrecto de listar claves (error de sintaxis)
+-gpg --list-keys
+
+# Listamos las claves disponibles
+gpg --list-keys
+
+# Primer intento de cifrar el archivo usando la clave del destinatario
+gpg --encrypt recipient B2A4D6C46E9BE392882D1CFCC7B525647F61707D /home/egalan/micifrado/secreto.txt
+
+# Entramos nuevamente al directorio
+cd micifrado
+
+# Verificamos los archivos presentes
+ls
+
+# Volvemos al directorio anterior
+cd ..
+
+# Ciframos correctamente el archivo usando la clave pública
+gpg --encrypt --recipient B2A4D6C46E9BE392882D1CFCC7B525647F61707D /home/egalan/micifrado/secreto.txt
+
+# Entramos al directorio nuevamente
+cd micifrado
+
+# Verificamos que se creó el archivo cifrado
+ls
+
+# Intentamos visualizar el archivo cifrado (se verá como texto ilegible)
+cat secreto.txt.gpg
+
+# Primer intento de descifrado con ruta incorrecta
+gpg --decrypt home/egalan/micifrado/secreto.txt.gpg > home/egalan/micifrado/resultado.txt
+
+# Desciframos el archivo correctamente y guardamos el resultado
+gpg --decrypt /home/egalan/micifrado/secreto.txt.gpg > /home/egalan/micifrado/resultado.txt
+
+# Verificamos que se creó el archivo resultado
+ls
+
+# Mostramos el contenido del archivo descifrado
+cat resultado.txt
+
+# Volvemos al directorio anterior
+cd ..
+
+==========================================================================================
+Comandos Laboratorio 6.2: IP tables - UFW/Firewall-cmd
+==========================================================================================
+
+ # Verificamos el estado del servicio http
+sudo systemctl status httpd
+
+ # Verificamos el estado del servicio SSH
+sudo systemctl status sshd
+
+# Verificamos el estado del servicio FTP
+sudo systemctl status vsftpd
+
+# Intentamos detener un servicio firewall
+sudo systemctl stop firewall
+
+# Detenemos el firewall dinámico de RHEL
+sudo systemctl stop firewalld
+
+# Intentamos iniciar iptables
+sudo systemctl start iptables
+
+# Instalamos el paquete que permite administrar iptables como servicio
+sudo dnf install iptables-services -y
+
+# Iniciamos el servicio iptables
+sudo systemctl start iptables
+
+# Verificamos su estado
+sudo systemctl status iptables
+
+# Habilitamos iptables para que inicie automáticamente
+sudo systemctl enable iptables
+
+# Confirmamos nuevamente el estado del servicio
+sudo systemctl status iptables
+
+# Primer intento de bloquear el puerto 80 (error de sintaxis)
+sudo iptables -I INPUT 1 -p tcp --dport 80 - j DROP
+
+# Bloqueamos el puerto 80 (HTTP)
+sudo iptables -I INPUT 1 -p tcp --dport 80 -j DROP
+
+# Bloqueamos el puerto 21 (FTP)
+sudo iptables -I INPUT 1 -p tcp --dport 21 -j DROP
+
+# Bloqueamos el puerto 22 (SSH)
+sudo iptables -I INPUT 1 -p tcp --dport 22 -j DROP
+
+# Intento incorrecto de listar reglas
+sudo iptables -l -n
+
+# Mostramos las reglas activas del firewall
+sudo iptables -L -n
+
+# Eliminamos la regla que bloquea SSH
+sudo iptables -D INPUT -p tcp --dport 22 -j DROP
+
+# Eliminamos la regla que bloquea FTP
+sudo iptables -D INPUT -p tcp --dport 21 -j DROP
+
+# Eliminamos la regla que bloquea HTTP
+sudo iptables -D INPUT -p tcp --dport 80 -j DROP
+
+# Revisamos nuevamente las reglas
+sudo iptables -L -n
+
+# Intento de eliminar nuevamente la regla de SSH
+sudo iptables -D INPUT -p tcp --dport 22 -j DROP
+
+# Mostramos el estado actual de las reglas
+sudo iptables -L -n
+
+# Limpiamos todas las reglas de la cadena INPUT
+sudo iptables -F INPUT
+
+# Confirmamos que no haya reglas activas
+sudo iptables -L -n
+
+# Detenemos el servicio iptables
+sudo systemctl stop iptables
+
+# Iniciamos nuevamente firewalld
+sudo systemctl start firewalld
+
+# Verificamos el estado del firewall
+sudo systemctl status firewalld
+
+# Eliminamos el puerto 80 del firewall
+sudo firewall-cmd --permanent --remove-port=80/tcp
+
+# Eliminamos el puerto 21
+sudo firewall-cmd --permanent --remove-port=21/tcp
+
+# Eliminamos el puerto 22
+sudo firewall-cmd --permanent --remove-port=22/tcp
+
+# Eliminamos el servicio HTTP
+sudo firewall-cmd --permanent --remove-service=http
+
+# Eliminamos el servicio SSH
+sudo firewall-cmd --permanent --remove-service=ssh
+
+# Eliminamos el servicio FTP
+sudo firewall-cmd --permanent --remove-service=ftp
+
+# Recargamos la configuración del firewall
+sudo firewall-cmd --reload
+
+# Volvemos a permitir el puerto 80
+sudo firewall-cmd --permanent --add-port=80/tcp
+
+# Permitimos el puerto 21
+sudo firewall-cmd --permanent --add-port=21/tcp
+
+# Permitimos el puerto 22
+sudo firewall-cmd --permanent --add-port=22/tcp
+
+# Permitimos el servicio HTTP
+sudo firewall-cmd --permanent --add-service=http
+
+# Permitimos el servicio SSH
+sudo firewall-cmd --permanent --add-service=ssh
+
+# Permitimos el servicio FTP
+sudo firewall-cmd --permanent --add-service=ftp
+
+# Recargamos nuevamente la configuración
+sudo firewall-cmd --reload
+
+============================================================================================
+Comandos Laboratorio 6.3: Instalacion de IDS snort
+============================================================================================
+
+# Actualizamos todos los paquetes del sistema
+dnf update
+
+# Otra forma de actualizar paquetes usando yum
+sudo yum update
+
+# Instalamos el repositorio EPEL necesario para dependencias adicionales
+sudo dnf install https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm -y
+
+# Habilitamos CodeReady Builder para RHEL 9, necesario para algunas librerías
+sudo subscription-manager repos --enable codeready-builder-for-rhel-9-x86_64-rpms
+
+# Editamos archivo de configuración de librerías locales (opcional según necesidades)
+sudo nano /etc/ld.so.conf.d/local.conf
+
+# Recargamos las librerías del sistema
+sudo ldconfig
+
+# Instalamos todas las dependencias necesarias para compilar Snort
+sudo dnf install flex bison gcc gcc-c++ make cmake autoconf libtool git nano unzip wget libpcap-devel pcre-devel libdnet-devel hwloc-devel openssl-devel zlib-devel luajit-devel pkgconfig pkgconf libunwind-devel libnfnetlink-devel libnetfilter_queue-devel libmnl-devel xz-devel gperftools libuuid-devel hyperscan hyperscan-devel -y
+
+# Nos movemos al directorio home
+cd ~
+
+# Clonamos el repositorio de libdnet, librería requerida por Snort
+git clone https://github.com/dugsong/libdnet.git
+
+# Configuramos libdnet sin ejecutar tests
+./configure --without-check
+
+
+# Compilamos la librería libdnet
+make
+
+# Instalamos libdnet en el sistema
+sudo make install
+
+# Recargamos librerías
+sudo ldconfig
+
+# Entramos al directorio de libdnet
+cd ~/libdnet
+
+# Listamos archivos para verificar contenido
+ls
+
+# Configuramos nuevamente libdnet
+./configure --without-check
+
+# Compilamos otra vez
+make
+
+# Instalamos libdnet
+sudo make install
+
+# Comando erróneo original (se mantiene para referencia)
+sudo lsconfig
+
+# Volvemos al directorio anterior
+cd ..
+
+# Recargamos librerías
+sudo ldconfig
+
+# Nos movemos al home
+cd ~
+
+# Clonamos repositorio libdaq (librería de adquisición de paquetes)
+git clone https://github.com/snort3/libdaq.git
+
+# Entramos a libdaq y compilamos todo de una vez
+cd libdaq && ./bootstrap && ./configure && make && sudo make install
+
+# Recargamos librerías y volvemos al home
+sudo ldconfig && cd ..
+
+# Clonamos Snort3 desde GitHub
+git clone https://github.com/snort3/snort3.git
+
+# Entramos al directorio de Snort3
+cd snort3
+
+# Configuramos variables para pkg-config
+export PKG_CONFIG_PATH=/usr/local/lib/pkconfig:$PKG_CONFIG_PATH
+export PKG_CONFIG_PATH=/usr/local/lib64/pkconfig:$PKG_CONFIG_PATH
+
+# Configuramos optimización de compilación
+export CFLAGS="-03"
+export CXXFLAGS="-O3 -fno-rtti"
+
+# Configuramos Snort3 con prefijo de instalación y tcmalloc
+./configure_cmake.sh --prefix=/usr/local/snort --enable-tcmalloc
+
+# Limpiamos variables temporales
+unset CFLAGS
+unset CXXFLAGS
+
+# Ajustamos optimización final
+export CFLAGS="-O3"
+export CXXFLAGS="-O3 -fno-rtti"
+
+# Limpiamos carpeta build de Snort3
+rm -rf build
+
+# Configuramos Snort3 nuevamente
+./configure_cmake.sh --prefix=/usr/local/snort --enable-tcmalloc
+
+# Instalamos dependencia pcre2-devel requerida por Snort
+sudo dnf install pcre2-devel -y
+
+# Entramos a Snort3
+cd ~/snort3
+
+# Configuramos nuevamente Snort3
+./configure_cmake.sh --prefix=/usr/local/snort --enable-tcmalloc
+
+# Compilamos e instalamos Snort3
+cd build/ && make -j$(nproc) install
+
+# Volvemos al directorio principal de Snort3
+cd ..
+
+# Recargamos librerías
+sudo ldconfig
+
+# Probamos ejecutar Snort
+/usr/local/snort/bin/snort
+
+# Creamos enlace simbólico para ejecutar Snort desde cualquier ruta
+sudo ln -s /usr/local/snort/bin/snort /usr/bin/snort
+
+# Verificamos la versión instalada
+snort -V
+
+# Editamos archivo de configuración principal de Snort
+sudo nano /usr/local/snort/etc/snort/snort.lua
+
+# Probamos configuración sin iniciar Snort completamente
+snort -T -c /usr/local/snort/etc/snort/snort.lua
+
+# Ponemos la interfaz de red en modo promiscuo
+sudo ip link set dev ens160 promisc on
+
+# Editamos reglas locales de Snort
+sudo nano /usr/local/snort/etc/snort/local.rules
+
+# Ejecutamos Snort con las reglas locales
+sudo snort -c /usr/local/snort/etc/snort/snort.lua -R /usr/local/snort/etc/snort/local.rules -i ens160 -A alert_fast -s 65535 -k none
+
+# Verificamos librerías DAQ instaladas
+ls /usr/local/lib/daq
+
+# Recargamos librerías
+sudo ldconfig
+
+# Listamos todos los DAQ disponibles
+/usr/local/snort/bin/snort --daq-list
+
+# Entramos al directorio libdaq para compilar nuevamente
+cd ~/libdaq
+
+# Inicializamos build de libdaq
+./bootstrap
+./configure
+make
+sudo make install
+
+# Recargamos librerías
+sudo ldconfig
+
+# Listamos DAQs otra vez
+/usr/local/snort/bin/snort --daq-list
+
+# Editamos nuevamente archivo de configuración principal
+sudo nano /usr/local/snort/etc/snort/snort.lua
+
+# Listamos DAQs usando la opción --daq-dir
+sudo snort --daq-dir /usr/local/lib/daq --daq-list
+
+# Repetimos el listado de DAQs varias veces por verificación
+snort --daq-dir /usr/local/lib/daq --daq-list
+snort --daq-dir /usr/local/lib/daq --daq-list
+
+# Ejecutamos Snort con reglas locales y DAQ específico
+sudo /usr/local/snort/bin/snort -c /usr/local/snort/etc/snort/snort.lua -R /usr/local/snort/etc/snort/local.rules -i ens160 --daq-dir /usr/local/lib/daq -A alert_fast
+
+=================================================================================================
+Laboratorio 6.4: CONFIGURAR 2FA CON GOOGLE AUTHENTICATOR, MÓDULO PAM PARA ACCESO SSH
+=================================================================================================
+
+# Instalamos servidor SSH
+sudo dnf install openssh-server
+
+# Iniciamos el servicio SSH
+sudo systemctl start sshd
+
+# Habilitamos el servicio para que inicie automáticamente
+sudo systemctl enable sshd
+
+# Verificamos estado del servicio SSH
+sudo systemctl status sshd
+
+# Habilitamos repositorio EPEL
+sudo dnf install epel-release -y
+
+# Instalamos Google Authenticator y dependencias de QR
+sudo dnf install google-authenticator qrencode qrencode-libs
+
+# Configuramos Google Authenticator para el usuario
+google-authenticator
+
+# Editamos PAM para requerir el código de Google Authenticator
+sudo nano /etc/pam.d/sshd
+
+# Agregamos la línea para forzar 2FA
+auth required pam_google_authenticator.so
+
+# Editamos configuración SSH
+sudo nano /etc/ssh/sshd_config
+
+# Habilitamos autenticación por contraseña y PAM
+PasswordAuthentication yes
+ChallengeResponseAuthentication yes
+UsePAM yes
+
+# Ajustamos contexto SELinux del directorio del usuario
+sudo semanage fcontext -a -t auth_home_t "/home/egalan(/.*)?"
+sudo restorecon -Rv /home/egalan
+
+# Confirmamos permisos del archivo Google Authenticator
+sudo chown egalan:egalan /home/egalan/.google_authenticator
+sudo chmod 600 /home/egalan/.google_authenticator
+
+# Ajustamos permisos y propiedad del home del usuario
+sudo chmod 700 /home/egalan
+sudo chown egalan:egalan /home/egalan
+
+# Reiniciamos SSH para aplicar cambios
+sudo systemctl restart sshd
+
+# Probamos la conexión SSH desde la máquina host
+ssh egalan@192.168.1.21
+
+# Se pedirá contraseña y luego el código de Google Authenticator
