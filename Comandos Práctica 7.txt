@@ -1,0 +1,229 @@
+=====================================================================================
+Comandos Laboratorio 7.1:
+=====================================================================================
+
+Servidor NFS:
+
+# Instalación
+dnf install nfs-utils -y
+
+# Crear directorio compartido
+mkdir -p /var/nfs/OS3
+cd /var/nfs/OS3
+
+# Crear archivos de prueba
+touch Adrian{001..100}.txt
+ls | wc -l
+
+# Permisos
+sudo chown nobody:nobody /var/nfs/OS3
+sudo chmod 755 /var/nfs/OS3
+
+# Configuración de exportación
+sudo nano /etc/exports
+# Configuración de firewall
+sudo firewall-cmd --permanent --add-service={nfs,mountd,rpc-bind}
+sudo firewall-cmd --reload
+
+
+# Iniciar servicio
+sudo systemctl enable --now nfs-server
+sudo systemctl status nfs-server
+
+# Exportar recursos (intentos realizados)
+sudo exports -arv
+
+
+Cliente NFS:
+
+# Instalación
+dnf install nfs-utils -y
+
+# Crear punto de montaje
+mkdir -p /mnt/OS3_client
+
+# Montaje manual
+sudo mount -t nfs 192.168.1.20:/var/nfs/OS3 /mnt/OS3_client
+
+# Verificar contenido
+ls -l /mnt/OS3_client
+
+# Configuración persistente
+sudo nano /etc/fstab
+#Agregamos:
+192.168.1.20:/var/nfs/OS3 /mnt/OS3_client nfs defaults 0 0
+
+# Verificar configuración
+sudo mount -a
+
+# Montaje automático (Luego de reiniciar)
+sudo mount -a
+
+# Verificar nuevamente
+ls -l /mnt/OS3_client
+
+
+============================================================================================
+Comandos Laboratorio 7.2:
+============================================================================================
+# Instalación de Samba
+sudo dnf install samba samba-client
+
+# Habilitar servicios
+systemctl enable --now smb nmb
+
+# Crear grupo y usuario
+sudo groupadd grupo_samba
+sudo useradd -G grupo_samba usuario_samba
+sudo smbpasswd -a usuario_samba
+
+# Crear directorio compartido
+mkdir -p /samba/compartido
+
+# Crear archivos de prueba
+touch /samba/compartido/adrian{001..100}.txt
+ls /samba/compartido/adrian{001..100}.txt
+
+# Permisos
+sudo chown -R :grupo_samba /samba/compartido
+sudo chmod -R 775 /samba/compartido
+
+# Contexto SELinux
+sudo chcon -R -t samba_share_t /samba/compartido
+
+# Configuración SELinux (intentos realizados)
+sudo setsbool -p samba_exports_all_rw on
+sudo setsebool -p samba_exports_all_rw on
+sudo setsebool -P samba_exports_all_rw on
+setsebool -P samba_export_all_rw on
+
+# Configuración de Samba
+sudo nano /etc/samba/smb.conf
+# Agregamos al final del archivo:
+
+[ArchivosAdrian]
+path = /samba/compartido
+valid users = @grupo_samba
+browsable = yes
+writable = yes
+guest ok = no
+read only = no
+# Reiniciar servicio
+sudo systemctl restart smb
+
+# Configurar firewall
+sudo firewall-cmd --permanent --add-service=samba
+sudo firewall-cmd --reload
+
+# Prueba
+cat /samba/compartido/adrian099.txt
+============================================================================================
+Comandos Practica 7.3:
+============================================================================================
+
+# 1. Hostname
+sudo hostnamectl set-hostname dc1.os3.inet
+
+# 2. Hosts (EDITAR MANUALMENTE)
+sudo nano /etc/hosts
+# DEBE QUEDAR:
+# 192.168.1.200   dc1.os3.inet   dc1
+
+# 3. Actualizar sistema
+sudo dnf -y update
+
+# 4. Repositorios
+sudo dnf install https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm -y
+sudo dnf config-manager --set-enabled codeready-builder-for-rhel-9-x86_64-rpms
+sudo dnf makecache
+
+# 5. Dependencias
+sudo dnf install -y wget tar gcc make python3-devel flex bison gdb git \
+keyutils-libs-devel libacl-devel libattr-devel libblkid-devel \
+libxml2-devel libxslt-devel openldap-devel pam-devel popt-devel \
+readline-devel zlib-devel systemd-devel lmdb-devel jansson-devel \
+gpgme-devel libarchive-devel libicu-devel perl-ExtUtils-MakeMaker \
+perl-Parse-Yapp rpcgen libtirpc-devel gnutls-devel \
+python3-cryptography python3-dns dbus-devel
+
+# 6. Descargar Samba
+sudo mkdir -p /samba
+cd /samba
+sudo wget https://download.samba.org/pub/samba/stable/samba-4.21.1.tar.gz
+
+# 7. Descomprimir
+sudo tar -zxvf samba-4.21.1.tar.gz
+cd samba-4.21.1/
+
+# 8. Configurar compilación
+sudo ./configure --prefix=/usr/local/samba --enable-fhs --with-systemd --with-ads --with-ldap
+
+# 9. Compilar e instalar
+sudo make
+sudo make install
+
+# 10. Variables de entorno
+echo 'export PATH=$PATH:/usr/local/samba/bin:/usr/local/samba/sbin' >> ~/.bashrc
+source ~/.bashrc
+
+# 11. Provisionar dominio
+sudo /usr/local/samba/bin/samba-tool domain provision \
+ --use-rfc2307 \
+ --interactive \
+ --option="interfaces= lo ens160" \
+ --option="bind interfaces only=yes"
+
+# DATOS:
+# Realm: OS3.INET
+# Domain: OS3
+# Server Role: dc
+# DNS backend: SAMBA_INTERNAL
+# DNS Forwarder: 192.168.1.1
+
+# 12. DNS local
+sudo nano /etc/resolv.conf
+# DEBE QUEDAR:
+# nameserver 127.0.0.1
+# search os3.inet
+
+# 13. Kerberos
+sudo cp -f /usr/local/samba/var/lib/samba/private/krb5.conf /etc/krb5.conf
+
+# 14. SELinux (lab)
+sudo setenforce 0
+
+# 15. Servicio systemd
+sudo nano /etc/systemd/system/samba-ad-dc.service
+
+# CONTENIDO:
+# [Unit]
+# Description=Samba Active Directory Domain Controller
+# After=network.target
+#
+# [Service]
+# Type=simple
+# ExecStart=/usr/local/samba/sbin/samba -i
+#
+# [Install]
+# WantedBy=multi-user.target
+
+# 16. Activar servicio
+sudo systemctl daemon-reload
+sudo systemctl enable --now samba-ad-dc
+
+# 17. Firewall
+sudo firewall-cmd --permanent --add-service={dns,kerberos,ldap,ldaps}
+sudo firewall-cmd --permanent --add-port={53,88,135,139,389,445,464,636,3268,3269}/tcp
+sudo firewall-cmd --permanent --add-port={53,88,137,138,389,464}/udp
+sudo firewall-cmd --reload
+
+# 18. Crear usuario
+sudo /usr/local/samba/bin/samba-tool user add lanegracubana 20250723Et#
+
+# 19. Prueba DNS
+host -t SRV _ldap._tcp.os3.inet 127.0.0.1
+
+# 20. Kerberos
+sudo dnf install krb5-workstation -y
+kinit administrator
+
