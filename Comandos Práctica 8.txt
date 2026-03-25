@@ -1,0 +1,155 @@
+============================================================================================
+Laboratorio 8.1: Instalacion y configuracion de Docker
+============================================================================================
+
+# Agregar el repositorio de docker y las herramientas adicionales para manejar repositorios
+
+sudo dnf install -y yum-utils
+sudo dnf config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+
+# Instalar docker
+
+sudo dnf install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin -y
+
+# Iniciar y habilitar docker
+
+sudo systemctl enable --now docker
+
+# Crear el directorio de volumen
+
+sudo mkdir -p /home/website
+
+# Crear el archivo HTML (index.html)
+
+sudo nano /home/website/index.html
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NGINX En Docker</title>
+</head>
+<body>
+    <h1>Estephani Tavarez Galán</h1>
+    <h1>2025-0723</h1>
+</body>
+</html>
+
+# Descargar imagen y crear el docker
+
+sudo docker run -d \
+  --name SO3-nginx \
+  -p 8888:80 \
+  -v /home/website:/usr/share/nginx/html:Z \
+  nginx:latest
+  
+# Abrir el puerto en el firewall para permitir conexiones por el mismo
+
+sudo firewall-cmd --permanent --add-port=8888/tcp
+sudo firewall-cmd --reload
+
+# Ver contenido en el navegador
+
+http://127.0.0.1:8888
+
+============================================================================================
+Laboratorio 8.2: Instalacion de Portainer
+============================================================================================
+
+# Descargar la imagen de portainer
+
+sudo docker pull portainer/portainer-ce
+
+# Crear volumen de datos para portainer
+
+sudo docker volume create portainer_data
+
+# Crear el contenedor
+
+sudo docker run -d \
+  -p 9443:9443 \
+  --name portainer \
+  --restart=always \
+  --privileged \
+  -v /var/run/docker.sock:/var/run/docker.sock \
+  -v portainer_data:/data \
+  portainer/portainer-ce:latest
+  
+# Abrir el puerto en el firewall
+
+sudo firewall-cmd --permanent --add-port=9443/tcp
+sudo firewall-cmd --reload
+
+# Acceder a portainer desde el navegador
+
+https://127.0.0.1:9443
+
+==============================================================================================
+Laboratorio 8.3: Despliegue de contenedor de Wordpress utilizando Docker-Compose 
+==============================================================================================
+
+# Instalación de docker compose (se instalo de la practica anterior)
+
+# Verificar la instalación
+
+docker compose version 
+
+# Crear la carpeta para organizar todos los archivos del proyecto wordpress
+
+mkdir ~/mi_wordpress
+cd ~/mi_wordpress
+
+# Crear el archivo .yml
+
+nano docker-compose.yml
+
+version: '3.1'
+
+services:
+  db:
+    image: mysql:5.7
+    environment:
+      MYSQL_ROOT_PASSWORD: password_secreto
+      MYSQL_DATABASE: wordpress_db
+      MYSQL_USER: wordpress_user
+      MYSQL_PASSWORD: wordpress_password
+    volumes:
+      - db_data:/var/lib/mysql
+    restart: always
+
+  wordpress:
+    depends_on:
+      - db
+    image: wordpress:latest
+    ports:
+      - "8000:80"
+    environment:
+      WORDPRESS_DB_HOST: db:3306
+      WORDPRESS_DB_USER: wordpress_user
+      WORDPRESS_DB_PASSWORD: wordpress_password
+      WORDPRESS_DB_NAME: wordpress_db
+    volumes:
+
+      - ./wp-content:/var/www/html/wp-content:Z
+    restart: always
+
+volumes:
+  db_data:
+  
+# Configurar el firewall para permitir conexiones por el puerto 8000
+
+sudo firewall-cmd --permanent --add-port=8000/tcp
+sudo firewall-cmd --reload
+
+# Desplegar los contenedores
+
+docker compose up -d
+docker compose ps -a
+
+# Acceder desde el navegador
+
+http://192.168.1.200:8000
+
+
+
