@@ -1,194 +1,216 @@
-   Comandos Práctica 1:
- 
-    1  nmcli connectio show
-    2  nmcli connection modify ens160 ipv4.method auto
-    3  nmcli connection down ens160
-    4  nmcli connection up ens160
-    5  nmcli connection up ens160
-    6  nmcli connection show
-    7  nmcli connection modify ens160 ipv4.method auto
-    8  nmcli connection up ens160
-    9  ip a
-   10  ipp route
-   11  ip route
-   12  nmcli connection modify ens160 ipv4.method manual ipv4.addresses 192.168.1.6/24 ipv4.gateway 192.168.1.1 ipv4.dns 8.8.8.8 8.8.4.4
-   13  nmcli connection modify ens160 ipv4.method manual ipv4.addresses 192.168.1.6/24 ipv4.gateway 192.168.1.1 ipv4.dns "8.8.8.8 8.8.4.4"
-   14  nmcli connection up ens160
-   15  ip a
-   16  resolvctl status
-   17  resolvectl status
-   18  cat /etc/resolv.conf
-   19  nmtui
-   20  cd /etc/NetworkManager/system-connections
-   21  ls
-   22  nano /etc/NetworkManager/system-connections/ensl160.nmconnection
-   23  sudo nano ens160.nmconnection
-   24  sytemtl restart NetworkManager
-   25  sytemtl restart Network Manager
-   26  systemctl restart Network Manager
-   27  systemctl restart NetworkManager
-   28  ip a
-   29  sudo nano ens160.nmconnection
-   30  ip a
-   31  sudo nano ens160.nmconnection
-   32  systemctl restart NetworkManager
-   33  ip a
-   34  ip addr flush dev ens160
-   35  ip addr add 192.168.1.9/24 dev ens160
-   36  ip add default via 192.168.1.1
-   37  ip route add default via 192.168.1.1
-   38  resolvectl dns ens160 8.8.8.8 8.8.4.4
-   39  nano /etc/resolv.conf
-   40  pin google.com
-   41  ping google.com
-   42  history
-   43  adduser Estephani
-   44  usermod -aG sudo Estephani
-   45  deluser Estephani
-   46  sudoo deluser Estephani
-   47  sudo deluser Estephani
-   48  userdel Estephani
-   49  clear
-   50  adduser Estephani
-   51  clear
-   52  sudo adduser Estephani
-   53  sudo userdel Estephani
-   54  clear
-   55  adduser Estephani
-   56  userdel -r Estephani
-   57  sudo userdel Estephani
-   58  clear
-   59  adduser Estephani
-   60  usermod -aG wheel Estephani
-   61  groups Estephani
-   62  groupadd guest
-   63  adduser Pablito
-   64  usermod -aG guest Pablito
-   65  groups Pablito
-   66  userdel Pablito
-   67  userdel -r Pablito
-   68  groupdel guest
-   69  getent group guest
-   70  getent passwd Pablito
-   71  history
-   72  mkdir materia
-   73  cd materia
-   74  vi Estudiantes.txt
-   75  ls -l Estephani.txt
-   76  ls -l Estudiantes.txt
-   77  chmod 700 Estudiantes.txt
-   78  ls -l Estudiantes.txt
-   79  chmod 070 Estudiantes.txt
-   80  ls -l Estudiantes.txt
-   81  cd ..
-   82  mkdir materia2
-   83  cp materia/Estudiantes.txt materia2/
-   84  cd materia2
-   85  ls
-   86  rm -r materia
-   87  cd ..
-   88  rm -r materia
-   89  ls
-   90  history
-   91  nmcli con show
-   92  nmcli con modify ens160 ipv4.method auto
-   93  nmcli con up ens160
-   94  ip a
-   95  ip route
-   96  ping -c 3 8.8.8.8
-   97  nmcli con mod ens160 ipv4.method auto
-   98  nmcli con mod ens160 ipv4.addresses ""
-   99  nmcli con down ens160
-  100  nmcli con up ens160
-  101  ip a
-  102  ip route
-  103  nmcli con delete ens160
-  104  nmcli con add type ethernet ifname ens160 con-name ens160 ipv4.method auto
-  105  nmcli con up ens160
-  106  ip a
-  107  ip route
-  108  ping -c 3 8.8.8.8
-  109  subscription-manager register
-  110  subscription-manager register
-  111  subscription-manager register
-  112  subscription-manager register
-  113  subscription-manager attach --auto
-  114  dnf repolist
-  115  clear
-  116  dnf update
-  117  dnf upgrade
-  118  dnf repolist
-  119  dnf search bashtop
-  120  git clone https://github.com/aristocratos/bashtop.git
-  121  dnf install git -y
-  122  git clone https://github.com/aristocratos/bashtop.git
-  123  ls
-  124  cd bashtop
-  125  make intall
-  126  make install
-  127  bashtop
-  128  ./bashtop
-  129  dnf remove bashtop
-  130  dnf autoremove
-  131  ls /etc/bashtop*
-  132  ls /etc | grep -i bashtop
-  133  ls -l /etc/bashtop*
-  134  dnf list installed | grep -i bashtop
-  135  which bashtop
-  136  date
+==================================================================================================================================
+Laboratorio 2.1: Actualizar el sistema
+==================================================================================================================================
 
+1- Actualize los repositorios del sistema (update & Upgrade) y Enumere los repositorios actualmente en uso en su servidor.
+2- Proceda a buscar la herramienta en el cache de los repositorios a ver si se encuentra disponible.
+3- Instale la herramienta "Bashtop Resource Monitor" en caso de ser necesario, agregarla al repositorio local (https://es.linux-console.net/?p=438#gsc.tab=0)
+4- Una vez halla presentado la herramienta anterior, proceda a desinstalarla. eliminando tambien todos los archivos de configuracion 
+5- Elimine todas las dependencias asociadas a este programa que ya no esten en uso
 
-================================================================================================
+## Bashtop es una herramienta de monitoreo de recursos del sistema que se ejecuta en la terminal y permite visualizar en tiempo real el estado del servidor o computadora. Sirve para supervisar el uso de CPU, memoria RAM, procesos activos, red y almacenamiento, todo desde una interfaz interactiva y gráfica dentro de la consola. Es útil para administradores y técnicos porque facilita detectar procesos que consumen demasiados recursos, analizar rendimiento del sistema y diagnosticar problemas sin necesidad de entorno gráfico.
 
-Comandos Práctica 2:
+# Mostrar la lista de repositorios actualmente habilitados en el servidor.
+# Permite verificar qué fuentes de software están activas antes de actualizar.
+dnf repolist
 
-  140  sudo su
-  141  nano crontab -e
-  142  nano crontab -e
-  143  systemctl start atd
-  144  systemctl enable atd
-  145  ls /tmp
-  146  echo "rm -rf /tmp/*" | at now +1 minute
-  147  ls /tmp
- 
-================================================================================================
+# Actualizar metadatos e instalar versiones más recientes de paquetes ya instalados.
+# Se usa para sincronizar el sistema con los repositorios.
+dnf update
 
-Comandos Práctica 3:
+# Realizar una actualización completa del sistema.
+# Similar a update, pero fuerza actualización más agresiva de paquetes/obsoletos.
+dnf upgrade
 
-  149  lsblk
-  150  fdisk /dev/nvme0n2
-  151  lsblk
-  152  mkfs.xfs /dev/nvme0n2p1
-  153  mkfs.ext4 /dev/nvme0n2p1
-  154  psw
-  155  pwd
-  156  ls
-  157  cd Escritorio
-  158  mkdir datos
-  159  mount /dev/nvme0n2p1 /home/egalan/datos
-  160  ls
-  161  cd datos
-  162  touch AdrianAlcantara.txt
-  163  ls
-  164  cd ..
-  165  unmount /dev/nvme0n2p1
-  166  umount /dev/nvme0n2p1
-  167  mount /dev/nvme0n2p1 /mnt
-  168  cd /mnt
-  169  ls
-  170  cd ..
-  171  ls
-  172  umount /mnt
-  173  mkdir /home/egalan/Escritorio/datos
-  174  mount /dev/nvme0n2p1 /home/egalan/Escritorio/datos
-  175  cd /home/egalan/Escritorio/datos
-  176  ls
-  177  touch AdrianAlcantara.txt
-  178  ls
-  179  umount /home/egalan/Escritorio/datos
-  180  cd ..
-  181  umount /home/egalan/Escritorio/datos
-  182  mount /dev/nvme0n2p1 /mnt
-  183  ls /mnt
+# Volver a listar repositorios después de actualizar para confirmar disponibilidad.
+dnf repolist
 
+# Buscar en el caché de repositorios si el paquete "bashtop" está disponible.
+# Esto permite validar si puede instalarse directamente desde repositorios.
+dnf search bashtop
 
+# Instalar Git si no estaba previamente disponible.
+# Git será necesario para clonar el repositorio del proyecto desde GitHub.
+dnf install git -y
+
+# Clonar el repositorio oficial de Bashtop desde GitHub.
+# Se descarga el código fuente porque el paquete no estaba disponible en repositorios.
+git clone https://github.com/aristocratos/bashtop.git
+
+# Listar archivos del directorio actual para confirmar que el repositorio fue descargado.
+ls
+
+# Entrar en la carpeta del proyecto Bashtop descargado.
+cd bashtop
+
+# Ejecutar instalación de Bashtop desde el código fuente.
+# Este comando copia binarios, archivos de configuración y recursos al sistema.
+make install
+
+# Ejecutar Bashtop para verificar que fue instalado correctamente.
+# Se abre el monitor de recursos interactivo en terminal.
+bashtop
+
+# Ejecutar Bashtop directamente desde el directorio actual.
+# Otra forma de lanzar el programa si el binario está en la carpeta local.
+./bashtop
+
+# Intentar desinstalar Bashtop usando DNF.
+# Este comando solo funcionaría si el programa hubiera sido instalado como paquete RPM.
+dnf remove bashtop
+
+# Eliminar dependencias huérfanas que ya no son necesarias.
+# Limpia paquetes instalados automáticamente que quedaron sin uso.
+dnf autoremove
+
+# Buscar archivos de configuración de Bashtop en /etc.
+# Permite verificar si quedaron configuraciones residuales tras la desinstalación.
+ls /etc/bashtop*
+
+# Buscar manualmente archivos relacionados con Bashtop en /etc usando grep.
+# Método alternativo para confirmar residuos de configuración.
+ls /etc | grep -i bashtop
+
+# Mostrar detalles completos de archivos de configuración encontrados.
+ls -l /etc/bashtop*
+
+# Verificar si Bashtop sigue apareciendo como paquete instalado.
+# Si no devuelve resultados, ya no está registrado como instalado en DNF.
+dnf list installed | grep -i bashtop
+
+# Buscar la ruta del ejecutable de Bashtop.
+# Si no devuelve ruta, significa que el binario ya no está disponible en PATH.
+which bashtop
+
+=======================================================================================================================
+Laboratorio 2.2: Programar tareas
+=======================================================================================================================
+
+Cron sirve para programar tareas que se ejecutan de forma repetitiva en horarios definidos, mientras que at permite programar una tarea para ejecutarse una sola vez en un momento específico. En resumen: Cron = tareas recurrentes / At = tarea única.
+
+1-Cree un trabajo cron que actualice el sistema todas las tardes a las 11 p.m
+2- Programe su máquina para que se reinicie todos los domingos a las 3 a.m.
+3- Cree una tarea programada usando el comando "at" para que elimine el contenido de la carpeta /tmp dentro de 1 minuto. Mostrar el resultado con ls /tmp antes y despues de la ejecucion 
+
+# Obtener una shell de superusuario.
+# Esto permite trabajar con privilegios administrativos para configurar tareas programadas del sistema.
+sudo su
+
+# Abrir el editor del crontab del usuario/root.
+# Aquí se agregan tareas programadas recurrentes que se ejecutarán automáticamente.
+crontab -e
+
+# ┌──────── Minuto (0 - 59)
+# │ ┌────── Hora (0 - 23)
+# │ │ ┌──── Día del mes (1 - 31)
+# │ │ │ ┌── Mes (1 - 12)
+# │ │ │ │ ┌ Día de la semana (0 - 7) → 0 y 7 = Domingo
+# │ │ │ │ │
+# * * * * * comando
+
+# Dentro del archivo crontab se agregan las siguientes tareas:
+
+# Actualizar el sistema todos los días a las 11:00 PM
+0 23 * * * dnf update -y && dnf upgrade -y
+
+# Reiniciar el sistema todos los domingos a las 3:00 AM
+0 3 * * 0 reboot
+
+# Iniciar el servicio atd.
+# Este servicio permite ejecutar tareas únicas programadas con el comando at.
+systemctl start atd
+
+# Habilitar atd para que inicie automáticamente con el sistema.
+systemctl enable atd
+
+# Mostrar contenido actual de /tmp antes de la ejecución programada.
+# Esto permite evidenciar qué archivos existen antes de la limpieza.
+ls /tmp
+
+# Programar una tarea única para ejecutarse en 1 minuto.
+# El comando eliminará todo el contenido de la carpeta /tmp.
+echo "rm -rf /tmp/*" | at now +1 minute
+
+# Mostrar nuevamente el contenido de /tmp después de esperar la ejecución.
+# Sirve para verificar que la tarea programada eliminó correctamente los archivos.
+ls /tmp
+
+===================================================================================================================================
+Comandos Práctica 3: Gestión de Discos, Particiones y Montaje de Sistemas de Archivos
+===================================================================================================================================
+
+# Mostrar todos los discos y particiones detectados por el sistema.
+# Esto permite identificar el nuevo disco agregado a la máquina virtual.
+lsblk
+
+# Iniciar el particionado del nuevo disco.
+# Después de /dev/ se coloca el nombre del disco agregado, en este caso nvme0n2.
+fdisk /dev/nvme0n2
+
+# Dentro de fdisk se siguió este proceso para crear la partición:
+# n  -> Crear nueva partición
+# p  -> Definirla como partición primaria
+# 1  -> Número de partición (partición 1)
+# Enter -> Aceptar primer sector por defecto
+# Enter -> Aceptar último sector por defecto (usar todo el espacio disponible)
+# w  -> Guardar cambios y salir de fdisk
+
+# Verificar que la nueva partición fue creada correctamente.
+# Debe aparecer como /dev/nvme0n2p1.
+lsblk
+
+# Intento inicial de formatear la partición como XFS.
+# Este formato no correspondía al solicitado en la práctica.
+mkfs.xfs /dev/nvme0n2p1
+
+# Formatear correctamente la partición con sistema de archivos EXT4.
+# Esto prepara la partición para almacenar datos.
+mkfs.ext4 /dev/nvme0n2p1
+
+# Mostrar el directorio actual de trabajo.
+pwd
+
+# Listar contenido del directorio actual.
+ls
+
+# Entrar al escritorio del usuario.
+cd Escritorio
+
+# Crear carpeta que servirá como punto de montaje inicial.
+mkdir datos
+
+# Montar la partición en la carpeta datos.
+mount /dev/nvme0n2p1 /home/egalan/Escritorio/datos
+
+# Verificar contenido del escritorio.
+ls
+
+# Entrar al disco montado.
+cd datos
+
+# Crear archivo de prueba dentro de la partición.
+touch AdrianAlcantara.txt
+
+# Verificar creación del archivo.
+ls
+
+# Regresar al directorio anterior.
+cd ..
+
+# Intento incorrecto de desmontar.
+unmount /dev/nvme0n2p1
+
+# Desmontar correctamente la partición.
+umount /dev/nvme0n2p1
+
+# Montar la misma partición en /mnt.
+mount /dev/nvme0n2p1 /mnt
+
+# Entrar al nuevo punto de montaje.
+cd /mnt
+
+# Verificar que el archivo sigue existiendo.
+ls
+
+# Desmontar nuevamente la unidad.
+umount /mnt
