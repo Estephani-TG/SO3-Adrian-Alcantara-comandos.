@@ -136,7 +136,7 @@ echo "rm -rf /tmp/*" | at now +1 minute
 ls /tmp
 
 ===================================================================================================================================
-Comandos Práctica 3: Gestión de Discos, Particiones y Montaje de Sistemas de Archivos
+Comandos Práctica 2.3: Gestión de Discos, Particiones y Montaje de Sistemas de Archivos
 ===================================================================================================================================
 
 # Mostrar todos los discos y particiones detectados por el sistema.
