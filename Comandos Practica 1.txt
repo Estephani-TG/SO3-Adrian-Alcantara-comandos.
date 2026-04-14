@@ -7,89 +7,224 @@ Laboratorio 1.1: Instalacion del Sistema Operativo (RHEL)
 Laboratorio 1.2: Configuración de parametros de red.
 ==========================================================================================================================
 
-    1  nmcli connectio show
-    2  nmcli connection modify ens160 ipv4.method auto
-    3  nmcli connection down ens160
-    4  nmcli connection up ens160
-    5  nmcli connection up ens160
-    6  nmcli connection show
-    7  nmcli connection modify ens160 ipv4.method auto
-    8  nmcli connection up ens160
-    9  ip a
-   11  ip route
-   12  nmcli connection modify ens160 ipv4.method manual ipv4.addresses 192.168.1.6/24 ipv4.gateway 192.168.1.1 ipv4.dns 8.8.8.8 8.8.4.4
-   13  nmcli connection modify ens160 ipv4.method manual ipv4.addresses 192.168.1.6/24 ipv4.gateway 192.168.1.1 ipv4.dns "8.8.8.8 8.8.4.4"
-   14  nmcli connection up ens160
-   15  ip a
-   16  resolvctl status
-   17  resolvectl status
-   18  cat /etc/resolv.conf
-   19  nmtui
-   20  cd /etc/NetworkManager/system-connections
-   21  ls
-   22  nano /etc/NetworkManager/system-connections/ensl160.nmconnection
-   23  sudo nano ens160.nmconnection
-   24  sytemtl restart NetworkManager
-   25  sytemtl restart Network Manager
-   26  systemctl restart Network Manager
-   27  systemctl restart NetworkManager
-   28  ip a
-   29  sudo nano ens160.nmconnection
-   30  ip a
-   31  sudo nano ens160.nmconnection
-   32  systemctl restart NetworkManager
-   33  ip a
-   34  ip addr flush dev ens160
-   35  ip addr add 192.168.1.9/24 dev ens160
-   36  ip add default via 192.168.1.1
-   37  ip route add default via 192.168.1.1
-   38  resolvectl dns ens160 8.8.8.8 8.8.4.4
-   39  nano /etc/resolv.conf
-   40  pin google.com
-   41  ping google.com
-   42  history
+1- Configure los parámetros de red utilizando DHCP e IP estática a traves de la terminal (explique TODAS las formas que sus sistema operativo permite configurarlo)
+2- Configure los DNS de google 8.8.8.8 - 8.8.4.4 en su sistema
+
+# Mostrar todas las conexiones de red configuradas en el sistema
+nmcli connection show
+
+# Configurar la interfaz ens160 para obtener IP automáticamente mediante DHCP
+nmcli connection modify ens160 ipv4.method auto
+
+# Desactivar temporalmente la conexión de red ens160
+nmcli connection down ens160
+
+# Activar nuevamente la conexión aplicando la configuración actual
+nmcli connection up ens160
+
+# Volver a mostrar las conexiones para verificar cambios
+nmcli connection show
+
+# Mostrar todas las interfaces de red y sus direcciones IP asignadas
+ip a
+
+# Mostrar la tabla de enrutamiento del sistema
+ip route
+
+# Configurar correctamente IP estática, gateway y DNS de Google. (Es iportante poner comillas al DNS)
+
+nmcli connection modify ens160 ipv4.method manual ipv4.addresses 192.168.1.6/24 ipv4.gateway 192.168.1.1 ipv4.dns "8.8.8.8 8.8.4.4"
+
+# Activar la conexión para aplicar la nueva configuración estática
+nmcli connection up ens160
+
+# Verificar que la IP estática fue asignada correctamente
+ip a
+
+# Mostrar el estado del resolvedor DNS del sistema
+resolvectl status
+
+# Mostrar contenido del archivo de configuración DNS
+cat /etc/resolv.conf
+
+# Abrir la interfaz de texto de NetworkManager para configuración interactiva
+nmtui
+
+# Acceder al directorio donde NetworkManager guarda los perfiles de conexión
+cd /etc/NetworkManager/system-connections
+
+# Listar archivos de perfiles de red existentes
+ls
+
+# Editar manualmente el archivo de configuración de la interfaz ens160
+nano /etc/NetworkManager/system-connections/ens160.nmconnection
+
+# Reiniciar NetworkManager para aplicar cambios hechos manualmente
+systemctl restart NetworkManager
+
+# Eliminar todas las direcciones IP actuales de la interfaz ens160
+ip addr flush dev ens160
+
+# Asignar temporalmente una IP manual a la interfaz ens160
+ip addr add 192.168.1.9/24 dev ens160
+
+# Agregar correctamente la puerta de enlace predeterminada
+ip route add default via 192.168.1.1
+
+# Configurar temporalmente los DNS de Google para la interfaz ens160
+resolvectl dns ens160 8.8.8.8 8.8.4.4
+
+# Editar manualmente el archivo tradicional de resolución DNS
+nano /etc/resolv.conf
+
+# Verificar conectividad de red y resolución DNS
+ping google.com
 
 
 =========================================================================================================================
 Práctica 1.3: Gestion de Usuario y grupos.
 =========================================================================================================================
+1- Cree un usuario con su nombre y agreguelo al grupo "sudoers" para que tenga permisos de administracion 
+2- Cree un grupo llamado guest, cree un usuario y agrequelo al grupo creado anteriormente Elimine el usuario y el crupo previamente creado
 
-   59  adduser Estephani
-   60  usermod -aG wheel Estephani
-   61  groups Estephani
-   62  groupadd guest
-   63  adduser Pablito
-   64  usermod -aG guest Pablito
-   65  groups Pablito
-   66  userdel Pablito
-   67  userdel -r Pablito
-   68  groupdel guest
-   69  getent group guest
-   70  getent passwd Pablito
-   71  history
+# Crear un nuevo usuario llamado Estephani en el sistema.
+# Esto genera su cuenta de usuario y normalmente también su directorio personal (/home/Estephani).
+adduser Estephani
+
+# Agregar al usuario Estephani al grupo wheel.
+# En distribuciones como RHEL/CentOS, pertenecer a wheel permite usar sudo
+# y ejecutar tareas administrativas con privilegios elevados.
+usermod -aG wheel Estephani
+
+# Verificar a qué grupos pertenece el usuario Estephani.
+# Se utiliza para confirmar que fue agregado correctamente al grupo wheel.
+groups Estephani
+
+# Crear un nuevo grupo llamado guest.
+# Este grupo puede utilizarse para agrupar usuarios invitados o con permisos limitados.
+groupadd guest
+
+# Crear un nuevo usuario llamado Pablito.
+# Se crea la cuenta de usuario para posteriormente asignarla al grupo guest.
+adduser Pablito
+
+# Agregar el usuario Pablito al grupo guest.
+# El parámetro -aG añade el grupo sin eliminar otros grupos secundarios existentes.
+usermod -aG guest Pablito
+
+# Verificar que Pablito pertenece correctamente al grupo guest.
+groups Pablito
+
+# Intento de eliminar el usuario Pablito.
+# Este comando elimina la cuenta, pero no su directorio personal.
+userdel Pablito
+
+# Eliminar completamente el usuario Pablito junto con su directorio home y archivos asociados.
+# Esta es la forma recomendada cuando se desea borrar al usuario por completo.
+userdel -r Pablito
+
+# Eliminar el grupo guest del sistema.
+# Solo es posible si no quedan usuarios asociados a ese grupo.
+groupdel guest
+
+# Verificar si el grupo guest aún existe.
+# Si no devuelve resultados, significa que fue eliminado correctamente.
+getent group guest
+
+# Verificar si el usuario Pablito aún existe en el sistema.
+# Si no devuelve resultados, el usuario fue eliminado exitosamente.
+getent passwd Pablito
 
 ===========================================================================================================
 Práctica 1.4: Gestion de Permisos de archivos.
 ===========================================================================================================
 
-   72  mkdir materia
-   73  cd materia
-   74  vi Estudiantes.txt
-   75  ls -l Estephani.txt
-   76  ls -l Estudiantes.txt
-   77  chmod 700 Estudiantes.txt
-   78  ls -l Estudiantes.txt
-   79  chmod 070 Estudiantes.txt
-   80  ls -l Estudiantes.txt
-   81  cd ..
-   82  mkdir materia2
-   83  cp materia/Estudiantes.txt materia2/
-   84  cd materia2
-   85  ls
-   86  rm -r materia
-   87  cd ..
-   88  rm -r materia
-   89  ls
-   90  history
+1- Cree una carpeta llamada materia, dentro cree un archivo llamado estudiante.txt y editelo utilizando "vi" , agregue su nombre y Matricula
+2- Modifique los permisos para que solo el usuario propietario del archivo pueda tener control total
+3- Modifique los permisos para que solo el el grupo propietario del archivo pueda tener control total 
+4- Cree una nueva carpeta llamada materia2 y cree una copia del archivo estudiante.txt dentro de ella
+4- Elimine la carpeta materia junto con el archivo estudiante.txt
+
+
+# Crear una carpeta llamada "materia".
+# Esta carpeta servirá como directorio de trabajo para almacenar el archivo de práctica.
+mkdir materia
+
+# Entrar dentro de la carpeta recién creada.
+# Es necesario ubicarse en el directorio para crear y editar archivos dentro de él.
+cd materia
+
+# Crear y editar el archivo Estudiantes.txt usando el editor vi.
+# Dentro del archivo se agrega el nombre y matrícula del estudiante.
+vi Estudiantes.txt
+
+# Intento de listar un archivo llamado Estephani.txt.
+# Probablemente fue una verificación de un nombre de archivo incorrecto o inexistente.
+ls -l Estephani.txt
+
+# Mostrar los permisos actuales del archivo Estudiantes.txt.
+# Permite ver propietario, grupo y permisos antes de modificarlos.
+ls -l Estudiantes.txt
+
+# Asignar permisos 700 al archivo.
+# Significado numérico:
+# 7 = Lectura (4) + Escritura (2) + Ejecución (1) = Control total
+# 0 = Sin permisos
+# Resultado:
+# - Propietario: control total
+# - Grupo: sin permisos
+# - Otros usuarios: sin permisos
+chmod 700 Estudiantes.txt
+
+# Verificar que los permisos fueron aplicados correctamente.
+ls -l Estudiantes.txt
+
+# Asignar permisos 070 al archivo.
+# Significado:
+# 0 = Propietario sin permisos
+# 7 = Grupo con control total (lectura, escritura y ejecución)
+# 0 = Otros sin permisos
+# Resultado:
+# - Solo el grupo propietario tiene control total sobre el archivo
+chmod 070 Estudiantes.txt
+
+# Verificar nuevamente los permisos después del cambio.
+ls -l Estudiantes.txt
+
+# Regresar al directorio anterior.
+# Se sale de la carpeta materia para trabajar desde el directorio padre.
+cd ..
+
+# Crear una nueva carpeta llamada materia2.
+# Esta carpeta almacenará la copia del archivo original.
+mkdir materia2
+
+# Copiar el archivo Estudiantes.txt desde materia hacia materia2.
+# Se conserva el archivo original y se crea una copia en el nuevo directorio.
+cp materia/Estudiantes.txt materia2/
+
+# Entrar a la carpeta materia2 para verificar la copia.
+cd materia2
+
+# Listar el contenido de la carpeta.
+# Se usa para confirmar que la copia del archivo fue realizada correctamente.
+ls
+
+# Intento de eliminar la carpeta materia desde dentro de materia2.
+# No funcionará si materia no existe dentro de materia2.
+rm -r materia
+
+# Regresar nuevamente al directorio padre.
+cd ..
+
+# Eliminar la carpeta materia junto con todo su contenido.
+# El parámetro -r permite borrar directorios recursivamente, incluyendo archivos internos.
+rm -r materia
+
+# Mostrar contenido actual del directorio para confirmar la eliminación.
+ls
+
+# Mostrar historial completo de comandos ejecutados durante la práctica.
+history
 
 
