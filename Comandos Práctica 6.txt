@@ -1,454 +1,612 @@
-============================================================================================
-Comandos Laboratorio 6.1: Cifrado
-============================================================================================
+========================================================================================================================
+Laboratorio 6.1: Cifrado
+========================================================================================================================
 
-  # Instalamos la herramienta GnuPG para trabajar con cifrado y claves
+1- Descargue la herramiente gpg2, instalarla y configurarla 
+2- Cree un directorio, y dentro un archivo y cifrelo utilizando gpg2
+3- Intente acceder al archivo cifrado
+4- Luego decifre el archivo y muestre el contenido del mismo
+
+
+#---------------------------------------------------------------------
+# GPG (GNU Privacy Guard) es una herramienta de cifrado que permite proteger archivos y comunicaciones mediante criptografía de clave pública/privada.
+
+# Se utiliza para cifrar información sensible, garantizar que solo usuarios autorizados puedan leerla y verificar autenticidad/integridad de archivos o mensajes digitales.
+#---------------------------------------------------------------------
+
+
+# Instalar GnuPG2.
+# Esta herramienta permite cifrar, descifrar y gestionar claves criptográficas.
 sudo dnf install gnupg2 -y
 
-# Generamos un nuevo par de claves (pública y privada)
+# Generar un nuevo par de claves pública/privada.
+# La clave pública se usa para cifrar y la privada para descifrar.
 gpg --full-generate-key
 
-# Creamos un directorio donde guardaremos el archivo a cifrar
-mkdir micifrado
-
-# Entramos al directorio
-cd micifrado
-
-# Creamos un archivo de texto con un mensaje
-echo "El es el poderoso de israel" > secreto.txt
-
-# Listamos los archivos del directorio
-ls
-
-# Mostramos el contenido del archivo
-cat secreto.txt
-
-# Mostramos la ruta actual
-pwd
-
-# Volvemos al directorio anterior
-cd ..
-
-# Intento incorrecto de listar claves (error de sintaxis)
--gpg --list-keys
-
-# Listamos las claves disponibles
+# Listar claves disponibles en el sistema.
+# Permite verificar que la clave fue creada correctamente.
 gpg --list-keys
 
-# Primer intento de cifrar el archivo usando la clave del destinatario
-gpg --encrypt recipient B2A4D6C46E9BE392882D1CFCC7B525647F61707D /home/egalan/micifrado/secreto.txt
 
-# Entramos nuevamente al directorio
+# ----------------------------------------------------------------------------
+# CREACIÓN DEL ARCHIVO A CIFRAR
+# ----------------------------------------------------------------------------
+
+# Crear directorio de trabajo para la práctica.
+mkdir micifrado
+
+# Entrar al directorio.
 cd micifrado
 
-# Verificamos los archivos presentes
+# Crear archivo de texto con contenido de prueba.
+echo "El es el poderoso de israel" > secreto.txt
+
+# Verificar que el archivo fue creado.
 ls
 
-# Volvemos al directorio anterior
+# Mostrar contenido original del archivo antes del cifrado.
+cat secreto.txt
+
+# Mostrar ruta actual de trabajo.
+pwd
+
+# ----------------------------------------------------------------------------
+# CIFRADO DEL ARCHIVO
+# ----------------------------------------------------------------------------
+
+# Volver al directorio anterior para ejecutar el cifrado con ruta completa.
 cd ..
 
-# Ciframos correctamente el archivo usando la clave pública
-gpg --encrypt --recipient B2A4D6C46E9BE392882D1CFCC7B525647F61707D /home/egalan/micifrado/secreto.txt
+# Cifrar el archivo usando la clave pública del destinatario.
+#
+# --encrypt   -> Indica que se realizará cifrado.
+# --recipient -> Especifica la clave pública que podrá descifrar el archivo.
+#
+# Se generará automáticamente el archivo secreto.txt.gpg
+gpg --encrypt \
+--recipient B2A4D6C46E9BE392882D1CFCC7B525647F61707D \
+/home/egalan/micifrado/secreto.txt
 
-# Entramos al directorio nuevamente
+# Entrar nuevamente al directorio para verificar resultado.
 cd micifrado
 
-# Verificamos que se creó el archivo cifrado
+# Listar archivos y confirmar creación del archivo cifrado.
 ls
 
-# Intentamos visualizar el archivo cifrado (se verá como texto ilegible)
+# Intentar visualizar el archivo cifrado.
+# El contenido aparecerá ilegible porque está cifrado.
 cat secreto.txt.gpg
 
-# Primer intento de descifrado con ruta incorrecta
-gpg --decrypt home/egalan/micifrado/secreto.txt.gpg > home/egalan/micifrado/resultado.txt
+# ----------------------------------------------------------------------------
+# DESCIFRADO DEL ARCHIVO
+# ----------------------------------------------------------------------------
 
-# Desciframos el archivo correctamente y guardamos el resultado
-gpg --decrypt /home/egalan/micifrado/secreto.txt.gpg > /home/egalan/micifrado/resultado.txt
+# Descifrar archivo .gpg y guardar el resultado en un nuevo archivo.
+#
+# --decrypt -> Usa la clave privada para recuperar el contenido original.
+gpg --decrypt /home/egalan/micifrado/secreto.txt.gpg \
+> /home/egalan/micifrado/resultado.txt
 
-# Verificamos que se creó el archivo resultado
+# Verificar que el archivo descifrado fue generado.
 ls
 
-# Mostramos el contenido del archivo descifrado
+# Mostrar contenido del archivo descifrado.
+# Debe coincidir con el contenido original.
 cat resultado.txt
 
-# Volvemos al directorio anterior
-cd ..
+======================================================================================================================
+Laboratorio 6.2: IP tables - UFW/Firewall-cmd
+======================================================================================================================
 
-==========================================================================================
-Comandos Laboratorio 6.2: IP tables - UFW/Firewall-cmd
-==========================================================================================
+1- Habilite los servicios de http, ftp y ssh en el servidor, muentre ambos servicios funcionando de manera correcta
+2- Utilizando IP tables bloquee el trafico del puerto 80, 21 y 22 para bloquear las conexiones hacia ambos servicios muestre los resultados
+3- Utilizando IP tables habilite nuevamente el trafico del puerto 80, 21 y 22 para permitir las conexiones hacia ambos servicios
+4- Utilizando ufw (si su distro es basada en debian) o firewall-cmd (si su distro esta basada en Red Hat) bloquee el trafico del puerto 80,21 y 22 para bloquear las conexiones hacia ambos servicios
+5- Habilite nuevamente el trafico del puerto 80, 21 y 22 para permitir las conexiones hacia ambos servicios.
 
- # Verificamos el estado del servicio http
+# ---------------------------------------------------------------------------
+# IPTables: Herramienta tradicional de Linux para crear reglas de filtrado de red de bajo nivel.
+# Firewalld: Administrador dinámico de firewall en sistemas RHEL que facilita la gestión de reglas mediante zonas y servicios.
+# ---------------------------------------------------------------------------
+
+
+# ----------------------------------------------------------------------------
+# VERIFICACIÓN DE SERVICIOS HABILITADOS
+# ----------------------------------------------------------------------------
+
+# Verificar que el servicio HTTP esté funcionando.
+# Apache/HTTPD debe estar activo para servir páginas web.
 sudo systemctl status httpd
 
- # Verificamos el estado del servicio SSH
+# Verificar que el servicio SSH esté funcionando.
+# SSH permite acceso remoto seguro al servidor.
 sudo systemctl status sshd
 
-# Verificamos el estado del servicio FTP
+# Verificar que el servicio FTP esté funcionando.
+# VSFTPD provee servicio de transferencia de archivos por FTP.
 sudo systemctl status vsftpd
 
-# Intentamos detener un servicio firewall
-sudo systemctl stop firewall
+# ----------------------------------------------------------------------------
+# INSTALACIÓN DE SERVICIOS SI NO ESTÁN PRESENTES
+# ----------------------------------------------------------------------------
 
-# Detenemos el firewall dinámico de RHEL
+# Instalar servidor web Apache (HTTP).
+# Proporciona el servicio web en el puerto 80.
+sudo dnf install httpd -y
+
+# Instalar servidor FTP.
+# VSFTPD permite transferencia de archivos por protocolo FTP.
+sudo dnf install vsftpd -y
+
+# Instalar servidor SSH.
+# Normalmente viene instalado por defecto, pero este comando lo instala si falta.
+sudo dnf install openssh-server -y
+
+# ----------------------------------------------------------------------------
+# HABILITAR E INICIAR SERVICIOS
+# ----------------------------------------------------------------------------
+
+# Iniciar y habilitar Apache.
+sudo systemctl enable --now httpd
+
+# Iniciar y habilitar FTP.
+sudo systemctl enable --now vsftpd
+
+# Iniciar y habilitar SSH.
+sudo systemctl enable --now sshd
+
+# ----------------------------------------------------------------------------
+# VERIFICAR ESTADO DE LOS SERVICOS
+# ----------------------------------------------------------------------------
+sudo systemctl status httpd
+sudo systemctl status vsftpd
+sudo systemctl status sshd
+
+# ----------------------------------------------------------------------------
+# PREPARAR IPTABLES EN RHEL
+# ----------------------------------------------------------------------------
+
+# Detener firewalld temporalmente.
+# Se hace porque firewalld e iptables no deben administrar reglas simultáneamente.
 sudo systemctl stop firewalld
 
-# Intentamos iniciar iptables
-sudo systemctl start iptables
-
-# Instalamos el paquete que permite administrar iptables como servicio
+# Instalar servicio de iptables si no está presente.
+# Esto permite administrar reglas persistentes mediante systemd.
 sudo dnf install iptables-services -y
 
-# Iniciamos el servicio iptables
+# Iniciar servicio iptables.
 sudo systemctl start iptables
 
-# Verificamos su estado
-sudo systemctl status iptables
-
-# Habilitamos iptables para que inicie automáticamente
+# Habilitar iptables al arranque.
 sudo systemctl enable iptables
 
-# Confirmamos nuevamente el estado del servicio
+# Verificar estado del servicio.
 sudo systemctl status iptables
 
-# Primer intento de bloquear el puerto 80 (error de sintaxis)
-sudo iptables -I INPUT 1 -p tcp --dport 80 - j DROP
+# ----------------------------------------------------------------------------
+# BLOQUEAR SERVICIOS CON IPTABLES
+# ----------------------------------------------------------------------------
 
-# Bloqueamos el puerto 80 (HTTP)
+# Bloquear puerto 80 (HTTP).
+# Impide acceso web al servidor.
 sudo iptables -I INPUT 1 -p tcp --dport 80 -j DROP
 
-# Bloqueamos el puerto 21 (FTP)
+# Bloquear puerto 21 (FTP).
+# Impide conexiones FTP entrantes.
 sudo iptables -I INPUT 1 -p tcp --dport 21 -j DROP
 
-# Bloqueamos el puerto 22 (SSH)
+# Bloquear puerto 22 (SSH).
+# Impide conexiones SSH entrantes.
 sudo iptables -I INPUT 1 -p tcp --dport 22 -j DROP
 
-# Intento incorrecto de listar reglas
-sudo iptables -l -n
-
-# Mostramos las reglas activas del firewall
+# Mostrar reglas activas.
+# Permite verificar que los bloqueos fueron aplicados.
 sudo iptables -L -n
 
-# Eliminamos la regla que bloquea SSH
+# ----------------------------------------------------------------------------
+# HABILITAR NUEVAMENTE SERVICIOS CON IPTABLES
+# ----------------------------------------------------------------------------
+
+# Eliminar regla de bloqueo SSH.
 sudo iptables -D INPUT -p tcp --dport 22 -j DROP
 
-# Eliminamos la regla que bloquea FTP
+# Eliminar regla de bloqueo FTP.
 sudo iptables -D INPUT -p tcp --dport 21 -j DROP
 
-# Eliminamos la regla que bloquea HTTP
+# Eliminar regla de bloqueo HTTP.
 sudo iptables -D INPUT -p tcp --dport 80 -j DROP
 
-# Revisamos nuevamente las reglas
+# Verificar que las reglas fueron removidas.
 sudo iptables -L -n
 
-# Intento de eliminar nuevamente la regla de SSH
-sudo iptables -D INPUT -p tcp --dport 22 -j DROP
+# ----------------------------------------------------------------------------
+# LIMPIEZA Y RETORNO A FIREWALLD
+# ----------------------------------------------------------------------------
 
-# Mostramos el estado actual de las reglas
-sudo iptables -L -n
-
-# Limpiamos todas las reglas de la cadena INPUT
+# Limpiar todas las reglas restantes de INPUT.
+# Esto deja iptables sin filtros activos.
 sudo iptables -F INPUT
 
-# Confirmamos que no haya reglas activas
+# Confirmar limpieza de reglas.
 sudo iptables -L -n
 
-# Detenemos el servicio iptables
+# Detener iptables para volver a usar firewalld.
 sudo systemctl stop iptables
 
-# Iniciamos nuevamente firewalld
+# Iniciar firewalld nuevamente.
 sudo systemctl start firewalld
 
-# Verificamos el estado del firewall
+# Verificar estado del firewall dinámico.
 sudo systemctl status firewalld
 
-# Eliminamos el puerto 80 del firewall
-sudo firewall-cmd --permanent --remove-port=80/tcp
+# ----------------------------------------------------------------------------
+# BLOQUEAR SERVICIOS CON FIREWALL-CMD
+# ----------------------------------------------------------------------------
 
-# Eliminamos el puerto 21
-sudo firewall-cmd --permanent --remove-port=21/tcp
-
-# Eliminamos el puerto 22
-sudo firewall-cmd --permanent --remove-port=22/tcp
-
-# Eliminamos el servicio HTTP
+# Remover acceso HTTP.
 sudo firewall-cmd --permanent --remove-service=http
 
-# Eliminamos el servicio SSH
+# Remover acceso SSH.
 sudo firewall-cmd --permanent --remove-service=ssh
 
-# Eliminamos el servicio FTP
+# Remover acceso FTP.
 sudo firewall-cmd --permanent --remove-service=ftp
 
-# Recargamos la configuración del firewall
+# Alternativamente también se pueden remover por puerto:
+sudo firewall-cmd --permanent --remove-port=80/tcp
+sudo firewall-cmd --permanent --remove-port=21/tcp
+sudo firewall-cmd --permanent --remove-port=22/tcp
+
+# Aplicar cambios.
 sudo firewall-cmd --reload
 
-# Volvemos a permitir el puerto 80
-sudo firewall-cmd --permanent --add-port=80/tcp
+# ----------------------------------------------------------------------------
+# HABILITAR NUEVAMENTE SERVICIOS CON FIREWALL-CMD
+# ----------------------------------------------------------------------------
 
-# Permitimos el puerto 21
-sudo firewall-cmd --permanent --add-port=21/tcp
-
-# Permitimos el puerto 22
-sudo firewall-cmd --permanent --add-port=22/tcp
-
-# Permitimos el servicio HTTP
+# Permitir nuevamente HTTP.
 sudo firewall-cmd --permanent --add-service=http
 
-# Permitimos el servicio SSH
+# Permitir nuevamente SSH.
 sudo firewall-cmd --permanent --add-service=ssh
 
-# Permitimos el servicio FTP
+# Permitir nuevamente FTP.
 sudo firewall-cmd --permanent --add-service=ftp
 
-# Recargamos nuevamente la configuración
+# Alternativamente también por puerto:
+sudo firewall-cmd --permanent --add-port=80/tcp
+sudo firewall-cmd --permanent --add-port=21/tcp
+sudo firewall-cmd --permanent --add-port=22/tcp
+
+# Aplicar configuración final.
 sudo firewall-cmd --reload
 
-============================================================================================
-Comandos Laboratorio 6.3: Instalacion de IDS snort
-============================================================================================
+================================================================================================================================
+Laboratorio 6.3: Instalacion de IDS snort
+================================================================================================================================
 
-# Actualizamos todos los paquetes del sistema
-dnf update
+1- Descargue e instale el  IDS snort (Apoyese de la documentacion oficial)
+2- Luego de instalado, cree las siguientes reglas de deteccion de trafico:
+Detectar todo el trafico ICMP (Ping) hacia el host
+Detectar todo el trafico hacia el puerto 21/tcp de ese host
+Detectar todo el trafico hacia el puerto 22/tcp de ese host
+Detectar todo el trafico hacia el puerto 80/tcp de ese host
+3- Ejecute el IDS, Realize las pruebas desde su maquina host, y muestre como son detectadas por el IDS 
 
-# Otra forma de actualizar paquetes usando yum
-sudo yum update
+#----------------------------------------------------------------------------
+# Snort es un IDS (Intrusion Detection System) de código abierto que analiza tráfico de red en tiempo real para detectar actividad sospechosa o patrones de ataque.
 
-# Instalamos el repositorio EPEL necesario para dependencias adicionales
-sudo dnf install https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm -y
+# Permite monitorear la red, generar alertas de seguridad y detectar accesos o tráfico no autorizado mediante reglas personalizadas.
+# ----------------------------------------------------------------------------
 
-# Habilitamos CodeReady Builder para RHEL 9, necesario para algunas librerías
-sudo subscription-manager repos --enable codeready-builder-for-rhel-9-x86_64-rpms
+# ----------------------------------------------------------------------------
+# ACTUALIZACIÓN DEL SISTEMA Y PREPARACIÓN DE REPOSITORIOS
+# ----------------------------------------------------------------------------
 
-# Editamos archivo de configuración de librerías locales (opcional según necesidades)
-sudo nano /etc/ld.so.conf.d/local.conf
+# Actualizar paquetes del sistema.
+# Se recomienda hacerlo antes de instalar software complejo.
+sudo dnf update -y
 
-# Recargamos las librerías del sistema
-sudo ldconfig
+# Instalar repositorio EPEL para dependencias adicionales.
+sudo dnf install \
+https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm -y
 
-# Instalamos todas las dependencias necesarias para compilar Snort
-sudo dnf install flex bison gcc gcc-c++ make cmake autoconf libtool git nano unzip wget libpcap-devel pcre-devel libdnet-devel hwloc-devel openssl-devel zlib-devel luajit-devel pkgconfig pkgconf libunwind-devel libnfnetlink-devel libnetfilter_queue-devel libmnl-devel xz-devel gperftools libuuid-devel hyperscan hyperscan-devel -y
+# Habilitar repositorio CodeReady Builder requerido por varias librerías.
+sudo subscription-manager repos \
+--enable codeready-builder-for-rhel-9-x86_64-rpms
 
-# Nos movemos al directorio home
+# ----------------------------------------------------------------------------
+# INSTALACIÓN DE DEPENDENCIAS NECESARIAS PARA SNORT
+# ----------------------------------------------------------------------------
+
+# Instalar herramientas de compilación y librerías requeridas.
+sudo dnf install -y \
+flex bison gcc gcc-c++ make cmake autoconf libtool git nano unzip wget \
+libpcap-devel pcre-devel libdnet-devel hwloc-devel openssl-devel \
+zlib-devel luajit-devel pkgconfig pkgconf libunwind-devel \
+libnfnetlink-devel libnetfilter_queue-devel libmnl-devel xz-devel \
+gperftools libuuid-devel hyperscan hyperscan-devel pcre2-devel
+
+# ----------------------------------------------------------------------------
+# COMPILAR E INSTALAR LIBDNET
+# ----------------------------------------------------------------------------
+
+# Clonar librería libdnet.
 cd ~
-
-# Clonamos el repositorio de libdnet, librería requerida por Snort
 git clone https://github.com/dugsong/libdnet.git
 
-# Configuramos libdnet sin ejecutar tests
+# Entrar al directorio fuente.
+cd libdnet
+
+# Configurar compilación.
 ./configure --without-check
 
-
-# Compilamos la librería libdnet
+# Compilar librería.
 make
 
-# Instalamos libdnet en el sistema
+# Instalar librería.
 sudo make install
 
-# Recargamos librerías
+# Recargar librerías compartidas.
 sudo ldconfig
 
-# Entramos al directorio de libdnet
-cd ~/libdnet
+# ----------------------------------------------------------------------------
+# COMPILAR E INSTALAR LIBDAQ
+# ----------------------------------------------------------------------------
 
-# Listamos archivos para verificar contenido
-ls
-
-# Configuramos nuevamente libdnet
-./configure --without-check
-
-# Compilamos otra vez
-make
-
-# Instalamos libdnet
-sudo make install
-
-# Comando erróneo original (se mantiene para referencia)
-sudo lsconfig
-
-# Volvemos al directorio anterior
-cd ..
-
-# Recargamos librerías
-sudo ldconfig
-
-# Nos movemos al home
+# Volver al home.
 cd ~
 
-# Clonamos repositorio libdaq (librería de adquisición de paquetes)
+# Clonar repositorio libdaq.
 git clone https://github.com/snort3/libdaq.git
 
-# Entramos a libdaq y compilamos todo de una vez
-cd libdaq && ./bootstrap && ./configure && make && sudo make install
-
-# Recargamos librerías y volvemos al home
-sudo ldconfig && cd ..
-
-# Clonamos Snort3 desde GitHub
-git clone https://github.com/snort3/snort3.git
-
-# Entramos al directorio de Snort3
-cd snort3
-
-# Configuramos variables para pkg-config
-export PKG_CONFIG_PATH=/usr/local/lib/pkconfig:$PKG_CONFIG_PATH
-export PKG_CONFIG_PATH=/usr/local/lib64/pkconfig:$PKG_CONFIG_PATH
-
-# Configuramos optimización de compilación
-export CFLAGS="-03"
-export CXXFLAGS="-O3 -fno-rtti"
-
-# Configuramos Snort3 con prefijo de instalación y tcmalloc
-./configure_cmake.sh --prefix=/usr/local/snort --enable-tcmalloc
-
-# Limpiamos variables temporales
-unset CFLAGS
-unset CXXFLAGS
-
-# Ajustamos optimización final
-export CFLAGS="-O3"
-export CXXFLAGS="-O3 -fno-rtti"
-
-# Limpiamos carpeta build de Snort3
-rm -rf build
-
-# Configuramos Snort3 nuevamente
-./configure_cmake.sh --prefix=/usr/local/snort --enable-tcmalloc
-
-# Instalamos dependencia pcre2-devel requerida por Snort
-sudo dnf install pcre2-devel -y
-
-# Entramos a Snort3
-cd ~/snort3
-
-# Configuramos nuevamente Snort3
-./configure_cmake.sh --prefix=/usr/local/snort --enable-tcmalloc
-
-# Compilamos e instalamos Snort3
-cd build/ && make -j$(nproc) install
-
-# Volvemos al directorio principal de Snort3
-cd ..
-
-# Recargamos librerías
-sudo ldconfig
-
-# Probamos ejecutar Snort
-/usr/local/snort/bin/snort
-
-# Creamos enlace simbólico para ejecutar Snort desde cualquier ruta
-sudo ln -s /usr/local/snort/bin/snort /usr/bin/snort
-
-# Verificamos la versión instalada
-snort -V
-
-# Editamos archivo de configuración principal de Snort
-sudo nano /usr/local/snort/etc/snort/snort.lua
-
-# Probamos configuración sin iniciar Snort completamente
-snort -T -c /usr/local/snort/etc/snort/snort.lua
-
-# Ponemos la interfaz de red en modo promiscuo
-sudo ip link set dev ens160 promisc on
-
-# Editamos reglas locales de Snort
-sudo nano /usr/local/snort/etc/snort/local.rules
-
-# Ejecutamos Snort con las reglas locales
-sudo snort -c /usr/local/snort/etc/snort/snort.lua -R /usr/local/snort/etc/snort/local.rules -i ens160 -A alert_fast -s 65535 -k none
-
-# Verificamos librerías DAQ instaladas
-ls /usr/local/lib/daq
-
-# Recargamos librerías
-sudo ldconfig
-
-# Listamos todos los DAQ disponibles
-/usr/local/snort/bin/snort --daq-list
-
-# Entramos al directorio libdaq para compilar nuevamente
-cd ~/libdaq
-
-# Inicializamos build de libdaq
+# Entrar y compilar.
+cd libdaq
 ./bootstrap
 ./configure
 make
 sudo make install
 
-# Recargamos librerías
+# Recargar librerías.
 sudo ldconfig
 
-# Listamos DAQs otra vez
-/usr/local/snort/bin/snort --daq-list
+# ----------------------------------------------------------------------------
+# COMPILAR E INSTALAR SNORT 3
+# ----------------------------------------------------------------------------
 
-# Editamos nuevamente archivo de configuración principal
-sudo nano /usr/local/snort/etc/snort/snort.lua
+# Volver al home.
+cd ~
 
-# Listamos DAQs usando la opción --daq-dir
-sudo snort --daq-dir /usr/local/lib/daq --daq-list
+# Clonar Snort3.
+git clone https://github.com/snort3/snort3.git
 
-# Repetimos el listado de DAQs varias veces por verificación
-snort --daq-dir /usr/local/lib/daq --daq-list
-snort --daq-dir /usr/local/lib/daq --daq-list
+# Entrar al código fuente.
+cd snort3
 
-# Ejecutamos Snort con reglas locales y DAQ específico
-sudo /usr/local/snort/bin/snort -c /usr/local/snort/etc/snort/snort.lua -R /usr/local/snort/etc/snort/local.rules -i ens160 --daq-dir /usr/local/lib/daq -A alert_fast
+# Configurar rutas de pkg-config.
+export PKG_CONFIG_PATH=/usr/local/lib/pkconfig:$PKG_CONFIG_PATH
+export PKG_CONFIG_PATH=/usr/local/lib64/pkconfig:$PKG_CONFIG_PATH
+
+# Configurar optimización de compilación.
+export CFLAGS="-O3"
+export CXXFLAGS="-O3 -fno-rtti"
+
+# Configurar compilación de Snort.
+./configure_cmake.sh \
+--prefix=/usr/local/snort \
+--enable-tcmalloc
+
+# Compilar e instalar.
+cd build/
+make -j$(nproc) install
+
+# Recargar librerías.
+sudo ldconfig
+
+# ----------------------------------------------------------------------------
+# CONFIGURACIÓN FINAL DE SNORT
+# ----------------------------------------------------------------------------
+
+# Crear enlace simbólico para usar snort globalmente.
+sudo ln -s /usr/local/snort/bin/snort /usr/bin/snort
+
+# Verificar instalación.
+snort -V
+
+# Probar configuración principal.
+snort -T -c /usr/local/snort/etc/snort/snort.lua
+
+# ----------------------------------------------------------------------------
+# CONFIGURAR INTERFAZ DE RED PARA MONITOREO
+# ----------------------------------------------------------------------------
+
+# Activar modo promiscuo en la interfaz.
+# Permite capturar todo el tráfico de red.
+sudo ip link set dev ens160 promisc on
+
+# ----------------------------------------------------------------------------
+# CREACIÓN DE REGLAS DE DETECCIÓN
+# ----------------------------------------------------------------------------
+
+# Editar archivo de reglas locales.
+sudo nano /usr/local/snort/etc/snort/local.rules
+
+# Poner dentro:
+
+# Detectar tráfico ICMP (ping) hacia el host.
+alert icmp any any -> $HOME_NET any \
+(msg:"ICMP Detectado"; sid:1000001; rev:1;)
+
+# Detectar tráfico TCP hacia puerto 21 (FTP).
+alert tcp any any -> $HOME_NET 21 \
+(msg:"Acceso FTP Detectado"; sid:1000002; rev:1;)
+
+# Detectar tráfico TCP hacia puerto 22 (SSH).
+alert tcp any any -> $HOME_NET 22 \
+(msg:"Acceso SSH Detectado"; sid:1000003; rev:1;)
+
+# Detectar tráfico TCP hacia puerto 80 (HTTP).
+alert tcp any any -> $HOME_NET 80 \
+(msg:"Acceso HTTP Detectado"; sid:1000004; rev:1;)
+
+CTRL + O -> CTRL + X
+
+
+# ----------------------------------------------------------------------------
+# EJECUTAR IDS SNORT
+# ----------------------------------------------------------------------------
+
+# Ejecutar Snort con reglas locales activas.
+sudo snort \
+-c /usr/local/snort/etc/snort/snort.lua \
+-R /usr/local/snort/etc/snort/local.rules \
+-i ens160 \
+--daq-dir /usr/local/lib/daq \
+-A alert_fast
+
+# Generar tráfico ICMP.
+ping IP_DEL_SERVIDOR
+
+# Probar acceso FTP.
+ftp IP_DEL_SERVIDOR
+
+# Probar acceso SSH.
+ssh usuario@IP_DEL_SERVIDOR
+
+# Probar acceso HTTP.
+curl http://IP_DEL_SERVIDOR
+
 
 =================================================================================================
-Laboratorio 6.4: CONFIGURAR 2FA CON GOOGLE AUTHENTICATOR, MÓDULO PAM PARA ACCESO SSH
+Laboratorio 6.4: CONFIGURAR 2FA CON GOOGLE AUTHENTICATOR, MÓDULO PAM PARA ACCESO SSH (RHEL 8)
 =================================================================================================
 
-# Instalamos servidor SSH
-sudo dnf install openssh-server
+# ----------------------------------------------------------------------------
+# INSTALACIÓN Y VERIFICACIÓN DE SSH
+# ----------------------------------------------------------------------------
 
-# Iniciamos el servicio SSH
+# Instalar servidor SSH si no está presente.
+sudo dnf install openssh-server -y
+
+# Iniciar servicio SSH.
 sudo systemctl start sshd
 
-# Habilitamos el servicio para que inicie automáticamente
+# Habilitar inicio automático del servicio.
 sudo systemctl enable sshd
 
-# Verificamos estado del servicio SSH
+# Verificar estado del servicio.
 sudo systemctl status sshd
 
-# Habilitamos repositorio EPEL
+# ----------------------------------------------------------------------------
+# INSTALACIÓN DE GOOGLE AUTHENTICATOR
+# ----------------------------------------------------------------------------
+
+# Habilitar repositorio EPEL.
 sudo dnf install epel-release -y
 
-# Instalamos Google Authenticator y dependencias de QR
-sudo dnf install google-authenticator qrencode qrencode-libs
+# Instalar Google Authenticator y utilidades QR.
+sudo dnf install google-authenticator qrencode qrencode-libs -y
 
-# Configuramos Google Authenticator para el usuario
+# ----------------------------------------------------------------------------
+# CONFIGURAR GOOGLE AUTHENTICATOR PARA EL USUARIO SSH
+# ----------------------------------------------------------------------------
+
+# Ejecutar configuración interactiva para el usuario que usará SSH.
+# Genera el archivo ~/.google_authenticator y muestra QR para registrar en app móvil.
 google-authenticator
 
-# Editamos PAM para requerir el código de Google Authenticator
+#### ¿Qué sucede en ese paso?
+
+Al ejecutarlo:
+
+# El sistema genera una clave secreta única para ese usuario.
+# Muestra en terminal un código QR ASCII (dibujado con caracteres).
+# También muestra una clave manual de respaldo.
+# Te hace varias preguntas de configuración (normalmente respondes y).
+
+## ¿Qué debes hacer desde la app de autenticación?
+
+# Cuando aparezca el QR:
+
+# Abre tu app de autenticación
+(Google Authenticator, Microsoft Authenticator, Authy, etc.)
+# Selecciona Agregar cuenta / +
+# Elige Escanear código QR
+# Escanea el QR que aparece en la terminal
+# La app comenzará a generar códigos temporales de 6 dígitos cada 30 segundos
+
+# ----------------------------------------------------------------------------
+# CONFIGURAR PAM PARA USAR GOOGLE AUTHENTICATOR
+# ----------------------------------------------------------------------------
+
+# Editar archivo PAM de SSH.
 sudo nano /etc/pam.d/sshd
 
-# Agregamos la línea para forzar 2FA
+# Agregar la siguiente línea AL INICIO del archivo
+# o justo antes de las líneas de autenticación principales:
+
 auth required pam_google_authenticator.so
 
-# Editamos configuración SSH
+# ----------------------------------------------------------------------------
+# CONFIGURAR SSH PARA SOLICITAR 2FA
+# ----------------------------------------------------------------------------
+
+# Editar configuración principal de SSH.
 sudo nano /etc/ssh/sshd_config
 
-# Habilitamos autenticación por contraseña y PAM
+# Buscar y modificar/agregar estas líneas en la sección de autenticación:
+
 PasswordAuthentication yes
 ChallengeResponseAuthentication yes
 UsePAM yes
 
-# Ajustamos contexto SELinux del directorio del usuario
+# Opcional/Recomendado en versiones modernas:
+KbdInteractiveAuthentication yes
+
+# También asegurarse de que NO exista:
+# AuthenticationMethods publickey
+# sin incluir keyboard-interactive/password
+
+# Agregar/Reemplazar esta línea para forzar contraseña + código 2FA:
+# Colocarla en la sección de autenticación del archivo.
+
+AuthenticationMethods password,keyboard-interactive
+
+# ----------------------------------------------------------------------------
+# AJUSTES SELINUX Y PERMISOS
+# ----------------------------------------------------------------------------
+
+# Ajustar contexto SELinux para archivo de autenticación.
 sudo semanage fcontext -a -t auth_home_t "/home/egalan(/.*)?"
+
+# Aplicar contexto SELinux.
 sudo restorecon -Rv /home/egalan
 
-# Confirmamos permisos del archivo Google Authenticator
+# Asignar propietario correcto al archivo Google Authenticator.
 sudo chown egalan:egalan /home/egalan/.google_authenticator
+
+# Proteger archivo de secretos 2FA.
 sudo chmod 600 /home/egalan/.google_authenticator
 
-# Ajustamos permisos y propiedad del home del usuario
+# Asegurar permisos correctos del home del usuario.
 sudo chmod 700 /home/egalan
 sudo chown egalan:egalan /home/egalan
 
-# Reiniciamos SSH para aplicar cambios
+# ----------------------------------------------------------------------------
+# REINICIAR SSH Y APLICAR CAMBIOS
+# ----------------------------------------------------------------------------
+
+# Reiniciar servicio SSH.
 sudo systemctl restart sshd
 
-# Probamos la conexión SSH desde la máquina host
+# ----------------------------------------------------------------------------
+# PRUEBA DESDE MÁQUINA HOST
+# ----------------------------------------------------------------------------
+
+# Conectarse desde la máquina host vía SSH.
 ssh egalan@192.168.1.21
 
-# Se pedirá contraseña y luego el código de Google Authenticator
+# Flujo esperado de autenticación:
+# 1. Solicita contraseña del usuario
+# 2. Solicita código de Google Authenticator
+# 3. Si ambos son correctos, permite acceso
