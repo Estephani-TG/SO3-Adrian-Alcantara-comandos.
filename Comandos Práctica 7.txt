@@ -1,105 +1,256 @@
-=====================================================================================
-Comandos Laboratorio 7.1:
-=====================================================================================
+=======================================================================================================================
+Laboratorio 7.1:  Compartir archivos entre linux utilizando NFS
+=======================================================================================================================
 
-Servidor NFS:
+1- Instale NFS en el servidor, cree un directorio llamado OS3 que contenga 100 archivos dentro llamados Adrian [1..100].txt que sera el directorio que se utilizara para compartir
+2- Asigne los permisos de carpeta y de usuario para que pueda ser acesible por otros usuarios 
+3- Configure los exports para definer que directorios y con que permisos seran compartidos
+4- En la maquina Linux cliente instale el cliente de NFS, y monte el directorio compartido desde el servidor NFS
+agrega una entrada en el archivo /etc/fstab para que el directorio compartido se monte desde que se reinicie la pc (muestre la prueba de que funciona visualizando los archivos en la VM cliente y luego reiniciando la VM y mostrando como se monta automaticamente al subir el Sistema)
 
-# Instalación
-dnf install nfs-utils -y
+#  ------------------------------------------------------------------------------------------------------------
 
-# Crear directorio compartido
-mkdir -p /var/nfs/OS3
+# NFS (Network File System) es un protocolo que permite compartir directorios entre sistemas Linux/Unix a través de la red como si fueran carpetas locales.
+
+# Permite centralizar almacenamiento y compartir archivos entre múltiples servidores o clientes Linux de forma transparente y eficiente.
+# ------------------------------------------------------------------------------------------------------------
+
+
+# ------------------------------------------------------------------------------------------------------------
+# Práctica 1: Compartir Archivos entre Linux utilizando NFS
+# ------------------------------------------------------------------------------------------------------------
+
+
+# ----------------------------------------------------------------------------
+# CONFIGURACIÓN EN EL SERVIDOR NFS
+# ----------------------------------------------------------------------------
+
+# Instalar servicios NFS.
+# Proporciona las herramientas necesarias para exportar directorios por red.
+sudo dnf install nfs-utils -y
+
+# Crear directorio que será compartido por NFS.
+sudo mkdir -p /var/nfs/OS3
+
+# Entrar al directorio compartido.
 cd /var/nfs/OS3
 
-# Crear archivos de prueba
+# Crear 100 archivos de prueba dentro del directorio compartido.
 touch Adrian{001..100}.txt
+
+# Verificar que se crearon correctamente.
 ls | wc -l
 
-# Permisos
+# ----------------------------------------------------------------------------
+# CONFIGURAR PERMISOS DEL DIRECTORIO COMPARTIDO
+# ----------------------------------------------------------------------------
+
+# Cambiar propietario al usuario/grupo nobody.
+# Es una práctica común para compartir directorios NFS públicos.
 sudo chown nobody:nobody /var/nfs/OS3
+
+# Asignar permisos de lectura/ejecución para otros usuarios.
+# 755 = propietario rwx / grupo rx / otros rx
 sudo chmod 755 /var/nfs/OS3
 
-# Configuración de exportación
+# ----------------------------------------------------------------------------
+# CONFIGURAR EXPORTACIÓN NFS
+# ----------------------------------------------------------------------------
+
+# Editar archivo de exportaciones NFS.
 sudo nano /etc/exports
-# Configuración de firewall
+
+# Poner dentro:
+
+/var/nfs/OS3 192.168.1.0/24(rw,sync,no_subtree_check)
+
+CTRL + O -> CTRL + X
+
+# Explicación:
+# /var/nfs/OS3          -> Directorio compartido.
+# 192.168.1.0/24        -> Red autorizada para acceder.
+# rw                    -> Permite lectura y escritura.
+# sync                  -> Escritura sincronizada (más segura).
+# no_subtree_check      -> Mejora rendimiento y evita validaciones extra.
+
+# Aplicar exportaciones configuradas.
+sudo exportfs -arv
+
+# ----------------------------------------------------------------------------
+# CONFIGURAR FIREWALL Y SERVICIO NFS
+# ----------------------------------------------------------------------------
+
+# Permitir tráfico necesario para NFS.
+sudo firewall-cmd --permanent --add-service=nfs
+sudo firewall-cmd --permanent --add-service=mountd
+sudo firewall-cmd --permanent --add-service=rpc-bind
+
+# Una alternativa es poner todos los servicios en una misma linea, tipo:
+
 sudo firewall-cmd --permanent --add-service={nfs,mountd,rpc-bind}
+
+# Aplicar cambios del firewall.
 sudo firewall-cmd --reload
 
-
-# Iniciar servicio
+# Iniciar y habilitar servicio NFS.
 sudo systemctl enable --now nfs-server
+
+# Verificar estado del servicio.
 sudo systemctl status nfs-server
 
-# Exportar recursos (intentos realizados)
-sudo exports -arv
+# ----------------------------------------------------------------------------
+# CONFIGURACIÓN EN EL CLIENTE NFS
+# ----------------------------------------------------------------------------
 
+# Instalar cliente NFS.
+sudo dnf install nfs-utils -y
 
-Cliente NFS:
+# Crear punto de montaje local.
+sudo mkdir -p /mnt/OS3_client
 
-# Instalación
-dnf install nfs-utils -y
+# ----------------------------------------------------------------------------
+# MONTAR RECURSO NFS MANUALMENTE
+# ----------------------------------------------------------------------------
 
-# Crear punto de montaje
-mkdir -p /mnt/OS3_client
+# Montar directorio compartido desde el servidor NFS.
+sudo mount -t nfs \
+192.168.1.20:/var/nfs/OS3 \
+/mnt/OS3_client
 
-# Montaje manual
-sudo mount -t nfs 192.168.1.20:/var/nfs/OS3 /mnt/OS3_client
-
-# Verificar contenido
+# Verificar que los archivos están accesibles.
 ls -l /mnt/OS3_client
 
-# Configuración persistente
+# ----------------------------------------------------------------------------
+# CONFIGURAR MONTAJE AUTOMÁTICO AL ARRANQUE
+# ----------------------------------------------------------------------------
+
+# Editar archivo fstab del cliente.
 sudo nano /etc/fstab
-#Agregamos:
+
+# Poner dentro:
+
 192.168.1.20:/var/nfs/OS3 /mnt/OS3_client nfs defaults 0 0
 
-# Verificar configuración
+CTRL + O -> CTRL + X
+
+# Explicación:
+# 192.168.1.20:/var/nfs/OS3 -> Recurso NFS remoto.
+# /mnt/OS3_client           -> Punto de montaje local.
+# nfs                       -> Tipo de sistema de archivos.
+# defaults                  -> Opciones de montaje estándar.
+# 0 0                       -> No usar dump/fsck.
+
+# Probar configuración de fstab sin reiniciar.
 sudo mount -a
 
-# Montaje automático (Luego de reiniciar)
-sudo mount -a
-
-# Verificar nuevamente
+# Verificar nuevamente acceso a los archivos.
 ls -l /mnt/OS3_client
 
+# ----------------------------------------------------------------------------
+# PRUEBA FINAL
+# ----------------------------------------------------------------------------
 
-============================================================================================
-Comandos Laboratorio 7.2:
-============================================================================================
-# Instalación de Samba
-sudo dnf install samba samba-client
+# Reiniciar máquina cliente.
+reboot
 
-# Habilitar servicios
-systemctl enable --now smb nmb
+# Luego de iniciar:
+ls -l /mnt/OS3_client
 
-# Crear grupo y usuario
+# Si los archivos aparecen automáticamente,
+# el montaje persistente fue exitoso.
+
+
+======================================================================================================================================
+Laboratorio 7.2: Creacion de fileserver compatible con Windows utilizando SAMBA
+======================================================================================================================================
+
+1- Instalar SAMBA y habilitar el servicio
+2- Crear Carpeta Compartida, Crear Usuarios y Grupos y dar los permisos necesarios a la carpeta compartida
+3- En la carpata de Samba crear 100 archivos llamados adrian(adrian1, adrian2.....adrian100)
+4- En el sistema Windows, mapear un nuevo disco virtual y especificar la carpeta de samba como disco virtual donde se visualisaran los 100 archivos
+5- Ingresar al archivo Adrian99 desde el disco mapeado en windows y agregar la frase "el zumzum de la carabela", guardar y regresar a la carpeta desde linux y validar que la modificacion se hara realizado satisfactoriamente. 
+
+# ----------------------------------------------------------------------------
+# Samba es una implementación libre del protocolo SMB/CIFS que permite compartir archivos e impresoras entre Linux y Windows.
+# Permite que sistemas Windows accedan a carpetas Linux como si fueran unidades de red locales.
+# ----------------------------------------------------------------------------
+
+
+# ----------------------------------------------------------------------------
+# INSTALACIÓN Y HABILITACIÓN DE SAMBA
+# ----------------------------------------------------------------------------
+
+# Instalar servidor y cliente Samba.
+# Samba permite compartir archivos Linux con sistemas Windows mediante SMB/CIFS.
+sudo dnf install samba samba-client -y
+
+# Iniciar y habilitar servicios SMB/NMB.
+# smb  -> Servicio principal de compartición de archivos.
+# nmb  -> Servicio de descubrimiento en red estilo NetBIOS.
+sudo systemctl enable --now smb nmb
+
+# Verificar estado de los servicios.
+sudo systemctl status smb
+sudo systemctl status nmb
+
+# ----------------------------------------------------------------------------
+# CREACIÓN DE USUARIOS Y GRUPOS PARA SAMBA
+# ----------------------------------------------------------------------------
+
+# Crear grupo para usuarios autorizados al recurso compartido.
 sudo groupadd grupo_samba
+
+# Crear usuario Linux y agregarlo al grupo Samba.
 sudo useradd -G grupo_samba usuario_samba
+
+# Asignar contraseña Samba al usuario.
+# Esta será la contraseña usada desde Windows para acceder.
 sudo smbpasswd -a usuario_samba
 
-# Crear directorio compartido
-mkdir -p /samba/compartido
+# ----------------------------------------------------------------------------
+# CREACIÓN DEL DIRECTORIO COMPARTIDO
+# ----------------------------------------------------------------------------
 
-# Crear archivos de prueba
+# Crear carpeta que será compartida por Samba.
+sudo mkdir -p /samba/compartido
+
+# Crear 100 archivos de prueba.
 touch /samba/compartido/adrian{001..100}.txt
-ls /samba/compartido/adrian{001..100}.txt
 
-# Permisos
+# Verificar creación de archivos.
+ls /samba/compartido | wc -l
+
+# ----------------------------------------------------------------------------
+# CONFIGURACIÓN DE PERMISOS DEL DIRECTORIO
+# ----------------------------------------------------------------------------
+
+# Asignar grupo propietario del directorio.
 sudo chown -R :grupo_samba /samba/compartido
+
+# Asignar permisos de lectura/escritura al propietario y grupo.
 sudo chmod -R 775 /samba/compartido
 
-# Contexto SELinux
+# La opción -R (Recursive / Recursivo) indica que el comando se aplicará
+no solo al directorio principal, sino también a todos sus archivos y subdirectorios internos.
+
+# ----------------------------------------------------------------------------
+# CONFIGURACIÓN SELINUX PARA SAMBA
+# ----------------------------------------------------------------------------
+
+# Asignar contexto SELinux apropiado al directorio compartido.
 sudo chcon -R -t samba_share_t /samba/compartido
 
-# Configuración SELinux (intentos realizados)
-sudo setsbool -p samba_exports_all_rw on
-sudo setsebool -p samba_exports_all_rw on
-sudo setsebool -P samba_exports_all_rw on
-setsebool -P samba_export_all_rw on
+# Permitir exportación de recursos Samba con escritura.
+sudo setsebool -P samba_export_all_rw on
 
-# Configuración de Samba
+# ----------------------------------------------------------------------------
+# CONFIGURACIÓN DEL RECURSO COMPARTIDO EN SAMBA
+# ----------------------------------------------------------------------------
+
+# Editar archivo principal de configuración Samba.
 sudo nano /etc/samba/smb.conf
-# Agregamos al final del archivo:
+
+# Agregar AL FINAL del archivo:
 
 [ArchivosAdrian]
 path = /samba/compartido
@@ -108,36 +259,125 @@ browsable = yes
 writable = yes
 guest ok = no
 read only = no
-# Reiniciar servicio
+
+CTRL + O -> CTRL + X
+
+# Reiniciar Samba para aplicar cambios.
 sudo systemctl restart smb
 
-# Configurar firewall
+# ----------------------------------------------------------------------------
+# CONFIGURAR FIREWALL
+# ----------------------------------------------------------------------------
+
+# Permitir tráfico Samba en firewall.
 sudo firewall-cmd --permanent --add-service=samba
+
+# Aplicar cambios.
 sudo firewall-cmd --reload
 
-# Prueba
-cat /samba/compartido/adrian099.txt
-============================================================================================
-Comandos Practica 7.3:
-============================================================================================
+# ----------------------------------------------------------------------------
+# ACCESO DESDE CLIENTE WINDOWS
+# ----------------------------------------------------------------------------
 
-# 1. Hostname
+# En Windows abrir el Explorador de Archivos.
+
+# Ir a:
+# This PC / Este Equipo
+
+# Seleccionar:
+# Map Network Drive / Conectar a unidad de red
+
+# Elegir letra de unidad (ejemplo Z:)
+
+# En Folder escribir:
+# \\IP_DEL_SERVIDOR\ArchivosAdrian
+
+# Marcar:
+# Reconnect at sign-in (opcional)
+
+# Pulsar Finish.
+
+# Cuando Windows solicite credenciales:
+
+Usuario: usuario_samba
+Contraseña: (la definida con smbpasswd)
+
+# ----------------------------------------------------------------------------
+# PRUEBA DE MODIFICACIÓN DESDE WINDOWS
+# ----------------------------------------------------------------------------
+
+# Desde Windows:
+# Abrir archivo adrian099.txt en la unidad de red mapeada.
+
+# Agregar el texto:
+# "el zumzum de la carabela"
+
+# Guardar archivo y cerrar.
+
+# ----------------------------------------------------------------------------
+# VALIDACIÓN DESDE LINUX
+# ----------------------------------------------------------------------------
+
+# Mostrar contenido del archivo modificado para verificar cambios.
+cat /samba/compartido/adrian099.txt
+
+
+=====================================================================================================================================
+Laboratorio 7.3: Creacion de controlador de Dominio con cliente Windows
+=====================================================================================================================================
+
+1- Crea un usuario en Linux llamado lanegracubana, como contrasena su matricula y agregarlo a samba
+2- Crear un dominio en samba4 llamado SO3.inet
+3- Agregar la VM de Windows al dominio con SAMBA y que autentique con el usuario creado en el punto anterior
+
+# ----------------------------------------------------------------------------
+# ¿Qué hace Samba4 como Domain Controller?
+# Samba4 permite que un servidor Linux actúe como un Active Directory,
+# proporcionando autenticación centralizada, DNS, LDAP y Kerberos para
+# equipos Windows y Linux dentro de un dominio empresarial.
+# ----------------------------------------------------------------------------
+
+
+# ----------------------------------------------------------------------------
+# CONFIGURACION DEL SERVIDOR LINUX (CONTROLADOR DE DOMINIO)
+# ----------------------------------------------------------------------------
+
+# Configurar hostname completo del servidor.
+# Debe coincidir con el FQDN del Domain Controller.
 sudo hostnamectl set-hostname dc1.os3.inet
 
-# 2. Hosts (EDITAR MANUALMENTE)
-sudo nano /etc/hosts
-# DEBE QUEDAR:
-# 192.168.1.200   dc1.os3.inet   dc1
 
-# 3. Actualizar sistema
+# ----------------------------------------------------------------------------
+# CONFIGURAR RESOLUCION LOCAL DE NOMBRES
+# ----------------------------------------------------------------------------
+
+sudo nano /etc/hosts
+
+# Agregar/Modificar:
+192.168.1.200   dc1.os3.inet   dc1
+
+# Esto permite que el propio servidor resuelva su nombre localmente.
+
+
+# ----------------------------------------------------------------------------
+# ACTUALIZAR SISTEMA Y REPOSITORIOS
+# ----------------------------------------------------------------------------
+
 sudo dnf -y update
 
-# 4. Repositorios
-sudo dnf install https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm -y
-sudo dnf config-manager --set-enabled codeready-builder-for-rhel-9-x86_64-rpms
+sudo dnf install \
+https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm -y
+
+sudo dnf config-manager \
+--set-enabled codeready-builder-for-rhel-9-x86_64-rpms
+
 sudo dnf makecache
 
-# 5. Dependencias
+
+# ----------------------------------------------------------------------------
+# INSTALAR DEPENDENCIAS NECESARIAS PARA COMPILAR SAMBA4
+# ----------------------------------------------------------------------------
+
 sudo dnf install -y wget tar gcc make python3-devel flex bison gdb git \
 keyutils-libs-devel libacl-devel libattr-devel libblkid-devel \
 libxml2-devel libxslt-devel openldap-devel pam-devel popt-devel \
@@ -146,84 +386,234 @@ gpgme-devel libarchive-devel libicu-devel perl-ExtUtils-MakeMaker \
 perl-Parse-Yapp rpcgen libtirpc-devel gnutls-devel \
 python3-cryptography python3-dns dbus-devel
 
-# 6. Descargar Samba
+
+# ----------------------------------------------------------------------------
+# DESCARGAR Y COMPILAR SAMBA4
+# ----------------------------------------------------------------------------
+
 sudo mkdir -p /samba
 cd /samba
+
 sudo wget https://download.samba.org/pub/samba/stable/samba-4.21.1.tar.gz
 
-# 7. Descomprimir
 sudo tar -zxvf samba-4.21.1.tar.gz
+
 cd samba-4.21.1/
 
-# 8. Configurar compilación
-sudo ./configure --prefix=/usr/local/samba --enable-fhs --with-systemd --with-ads --with-ldap
 
-# 9. Compilar e instalar
+# Configurar compilación de Samba como AD DC.
+sudo ./configure \
+--prefix=/usr/local/samba \
+--enable-fhs \
+--with-systemd \
+--with-ads \
+--with-ldap
+
+
+# Compilar e instalar.
 sudo make
 sudo make install
 
-# 10. Variables de entorno
+
+# ----------------------------------------------------------------------------
+# AGREGAR BINARIOS DE SAMBA AL PATH DEL SISTEMA
+# ----------------------------------------------------------------------------
+
 echo 'export PATH=$PATH:/usr/local/samba/bin:/usr/local/samba/sbin' >> ~/.bashrc
+
 source ~/.bashrc
 
-# 11. Provisionar dominio
+
+# ----------------------------------------------------------------------------
+# PROVISIONAR EL DOMINIO SAMBA4
+# ----------------------------------------------------------------------------
+
 sudo /usr/local/samba/bin/samba-tool domain provision \
  --use-rfc2307 \
  --interactive \
  --option="interfaces= lo ens160" \
  --option="bind interfaces only=yes"
 
-# DATOS:
+# Durante el asistente introducir:
+
 # Realm: OS3.INET
-# Domain: OS3
+# Domain: SO3
 # Server Role: dc
 # DNS backend: SAMBA_INTERNAL
 # DNS Forwarder: 192.168.1.1
 
-# 12. DNS local
+
+# Esto crea toda la estructura de Active Directory,
+# DNS interno, LDAP, Kerberos y políticas del dominio.
+
+
+# ----------------------------------------------------------------------------
+# CONFIGURAR DNS LOCAL DEL SERVIDOR
+# ----------------------------------------------------------------------------
+
 sudo nano /etc/resolv.conf
-# DEBE QUEDAR:
-# nameserver 127.0.0.1
-# search os3.inet
 
-# 13. Kerberos
-sudo cp -f /usr/local/samba/var/lib/samba/private/krb5.conf /etc/krb5.conf
+# Debe quedar:
+nameserver 127.0.0.1
+search os3.inet
 
-# 14. SELinux (lab)
+# Esto fuerza al servidor a consultarse a sí mismo para DNS.
+
+
+# ----------------------------------------------------------------------------
+# CONFIGURAR KERBEROS
+# ----------------------------------------------------------------------------
+
+sudo cp -f \
+/usr/local/samba/var/lib/samba/private/krb5.conf \
+/etc/krb5.conf
+
+
+# ----------------------------------------------------------------------------
+# AJUSTES SELINUX (LABORATORIO)
+# ----------------------------------------------------------------------------
+
 sudo setenforce 0
 
-# 15. Servicio systemd
+
+# ----------------------------------------------------------------------------
+# CREAR SERVICIO SYSTEMD PARA SAMBA AD DC
+# ----------------------------------------------------------------------------
+
 sudo nano /etc/systemd/system/samba-ad-dc.service
 
-# CONTENIDO:
-# [Unit]
-# Description=Samba Active Directory Domain Controller
-# After=network.target
-#
-# [Service]
-# Type=simple
-# ExecStart=/usr/local/samba/sbin/samba -i
-#
-# [Install]
-# WantedBy=multi-user.target
+# Contenido del archivo:
+[Unit]
+Description=Samba Active Directory Domain Controller
+After=network.target
 
-# 16. Activar servicio
+[Service]
+Type=simple
+ExecStart=/usr/local/samba/sbin/samba -i
+
+[Install]
+WantedBy=multi-user.target
+
+
+# Recargar systemd y habilitar servicio.
 sudo systemctl daemon-reload
 sudo systemctl enable --now samba-ad-dc
 
-# 17. Firewall
+
+# ----------------------------------------------------------------------------
+# CONFIGURAR FIREWALL PARA ACTIVE DIRECTORY
+# ----------------------------------------------------------------------------
+
 sudo firewall-cmd --permanent --add-service={dns,kerberos,ldap,ldaps}
-sudo firewall-cmd --permanent --add-port={53,88,135,139,389,445,464,636,3268,3269}/tcp
-sudo firewall-cmd --permanent --add-port={53,88,137,138,389,464}/udp
+
+sudo firewall-cmd --permanent \
+--add-port={53,88,135,139,389,445,464,636,3268,3269}/tcp
+
+sudo firewall-cmd --permanent \
+--add-port={53,88,137,138,389,464}/udp
+
 sudo firewall-cmd --reload
 
-# 18. Crear usuario
-sudo /usr/local/samba/bin/samba-tool user add lanegracubana 20250723Et#
 
-# 19. Prueba DNS
+# ----------------------------------------------------------------------------
+# CREAR USUARIO DEL DOMINIO
+# ----------------------------------------------------------------------------
+
+sudo /usr/local/samba/bin/samba-tool user add \
+lanegracubana 20250723Et#
+
+# Usuario solicitado en la práctica.
+
+
+# ----------------------------------------------------------------------------
+# VALIDAR DNS Y KERBEROS
+# ----------------------------------------------------------------------------
+
 host -t SRV _ldap._tcp.os3.inet 127.0.0.1
 
-# 20. Kerberos
 sudo dnf install krb5-workstation -y
+
 kinit administrator
 
+# Si no da error, Kerberos funciona correctamente.
+
+
+# ============================================================================
+# CONFIGURACION DEL CLIENTE WINDOWS
+# ============================================================================
+
+# ----------------------------------------------------------------------------
+# CONFIGURAR DNS DEL WINDOWS
+# ----------------------------------------------------------------------------
+
+# En el adaptador de red de Windows:
+# Configurar como DNS preferido:
+192.168.1.200
+
+# MUY IMPORTANTE:
+# Windows debe usar como DNS el Domain Controller,
+# de lo contrario no podrá localizar el dominio.
+
+
+# ----------------------------------------------------------------------------
+# UNIR WINDOWS AL DOMINIO
+# ----------------------------------------------------------------------------
+
+# En Windows ir a:
+# Settings / System / About
+# Rename this PC (Advanced)
+# Change...
+
+# Seleccionar:
+# Domain
+
+# Escribir:
+SO3.INET
+
+# Al solicitar credenciales introducir:
+
+Usuario: Administrator
+Contraseña: (la definida durante el provisionamiento)
+
+
+# Si todo está correcto:
+# Windows mostrará mensaje de bienvenida al dominio.
+
+
+# Reiniciar la máquina Windows.
+
+
+# ----------------------------------------------------------------------------
+# INICIAR SESION CON USUARIO DEL DOMINIO
+# ----------------------------------------------------------------------------
+
+# En la pantalla de login seleccionar:
+# Other User
+
+# Ingresar:
+
+SO3\lanegracubana
+
+# Contraseña:
+20250723Et#
+
+
+# También puede usarse:
+lanegracubana@so3.inet
+
+
+# Si la autenticación es correcta:
+# Windows iniciará sesión con el usuario del dominio.
+
+
+# ----------------------------------------------------------------------------
+# VALIDACION FINAL
+# ----------------------------------------------------------------------------
+
+# Desde CMD en Windows ejecutar:
+whoami
+
+# Debe mostrar algo similar a:
+so3\lanegracubana
+
+# Esto confirma que el usuario autenticó contra Samba AD.
