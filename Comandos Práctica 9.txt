@@ -404,6 +404,8 @@ doctl auth init
 # doctl compute droplet create
 # doctl account get
 
+# Filtrar por distro y versiones
+doctl compute image list --public --format ID,Name,Distribution
 # -----------------------------------------------------------------------------------
 # CAMBIAR NOMBRE DE LA MÁQUINA
 # -----------------------------------------------------------------------------------
