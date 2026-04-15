@@ -1,156 +1,278 @@
-=========================================================================================
+=====================================================================================================================
 Laboratorio 9.1: Instalacion de webmin
-=========================================================================================
+=====================================================================================================================
 
 Instala webmin
 Muestre las Opciones de adminsitracion que se pueden ejecutar via Webmin (Administración de usuarios: Crear, y eliminar una cuenta de usuario, Gestión de servicios: Iniciar, detener y reiniciar servicio del sistema (Ej SSH). Configuración de red: Configurar una IP estatica en interfaces de red, Administración de software: actualizar  Instalar,y eliminar Alguna herramienta.Gestión de archivos y directorios: Explorar, editar un archivo y eliminarlo. Monitorización del sistema: Supervisar el rendimiento del sistema,(Memoria, Procesador Armacenamiento)
 
-# WEBMIN
+1- Instala webmin
+2- Muestre las Opciones de adminsitracion que se pueden ejecutar via Webmin (Administración de usuarios: Crear, y eliminar una cuenta de usuario, Gestión de servicios: Iniciar, detener y reiniciar servicio del sistema (Ej SSH). Configuración de red: Configurar una IP estatica en interfaces de red, Administración de software: actualizar  Instalar,y eliminar Alguna herramienta.Gestión de archivos y directorios: Explorar, editar un archivo y eliminarlo. Monitorización del sistema: Supervisar el rendimiento del sistema,(Memoria, Procesador Armacenamiento)
 
-# Agregar el repositorio de webmin
+# ¿Qué es Webmin?
+# Webmin es una herramienta de administración web para Linux que permite
+# gestionar el servidor desde un navegador mediante interfaz gráfica.
+# Facilita la administración de usuarios, servicios, red, paquetes,
+# archivos y monitoreo del sistema.
 
-Crear un archivo con:
+# -----------------------------------------------------------------------------------
+# INSTALACIÓN DE WEBMIN
+# -----------------------------------------------------------------------------------
+
+# Crear repositorio de Webmin
 sudo nano /etc/yum.repos.d/webmin.repo
 
+# Contenido del archivo:
 [Webmin]
 name=Webmin Distribution Neutral
-#baseurl=https://download.webmin.com/download/yum
 mirrorlist=https://download.webmin.com/download/yum/mirrorlist
 enabled=1
 gpgcheck=1
 gpgkey=https://download.webmin.com/jcameron-key.asc
 
-# Instalar dependencias y webmin
 
+# Actualizar caché de repositorios
 sudo dnf makecache
+
+# Instalar Webmin
 sudo dnf install webmin --nogpgcheck -y
 
-# Habilitar el servicio
 
+# -----------------------------------------------------------------------------------
+# HABILITAR SERVICIO
+# -----------------------------------------------------------------------------------
+
+# Iniciar y habilitar Webmin
 sudo systemctl enable --now webmin
 
-# Configurar firewall
+# Verificar estado del servicio
+sudo systemctl status webmin
 
+
+# -----------------------------------------------------------------------------------
+# CONFIGURAR FIREWALL
+# -----------------------------------------------------------------------------------
+
+# Permitir acceso al puerto de Webmin
 sudo firewall-cmd --permanent --add-port=10000/tcp
+
+# Aplicar cambios
 sudo firewall-cmd --reload
 
-# Entrar con https://192.168.1.200:10000
 
-# Administración de usuarios
-Crear usuario
-1.	Ir a: System → Users and Groups 
-2.	Click en Create a new user 
-3.	Completar: Username Password 
-4.	Click en Create
+# -----------------------------------------------------------------------------------
+# ACCESO A WEBMIN
+# -----------------------------------------------------------------------------------
 
-# Eliminar usuario
-1.	Buscar el usuario 
-2.	Click sobre él 
-3.	Click en Delete 
+# Desde navegador acceder a:
+# https://IP_DEL_SERVIDOR:10000
 
-# Gestión de servicios
-1.	Ir a: System → Bootup and Shutdown 
-2.	Buscar servicio
-3.	Usar: Start, Stop o Restart 
-
-# Configuración de red (IP estática)
-1.	Ir a: Networking → Network Configuration 
-2.	Click en Network Interfaces 
-3.	Seleccionar interfaz (ej: eth0) 
-4.	Configurar: Static configuration, IP Address, Netmask y Gateway 
-5.	Guardar cambios 
+# Iniciar sesión con root o usuario con privilegios sudo.
 
 
-# Administración de software 
+# -----------------------------------------------------------------------------------
+# ADMINISTRACIÓN DE USUARIOS
+# -----------------------------------------------------------------------------------
 
-# Instalar paquete
-1. Ir a: System → Software Packages 
-2. Seleccionar: Package from YUM 
-3. En el campo escribir:  net-tools   
-4. Click en Install 
+# Ir en Webmin a:
+# System -> Users and Groups
 
-# Actualizar sistema
-1.	Ir a: System → Software Package Updates 
-2.	Click en Update Selected Packages 
+# Crear usuario:
+# Click en "Create a new user"
+# Completar Username / Password
+# Click en Create
 
-# Eliminar paquete (nano)
-1.	Buscar: net-tools
-2.	Click en él 
-3.	Click en Remove 
+# Eliminar usuario:
+# Seleccionar usuario
+# Click en Delete
 
 
-# Gestión de archivos y directorios (PRÁCTICA COMPLETA)
-1.	Ir a: Tools → File Manager 
+# -----------------------------------------------------------------------------------
+# GESTIÓN DE SERVICIOS
+# -----------------------------------------------------------------------------------
 
-# Explorar Navega entre carpetas (/, /home, /etc, etc.) 
-# Crear directorio
-1.	Ir a una ruta (ej: /home) 
-2.	Click en Create 
-3.	Seleccionar: Directory 
-4.	Nombre: practica_webmin
-5.	Crear 
+# Ir en Webmin a:
+# System -> Bootup and Shutdown
 
-# Crear/ editar archivo dentro
+# Desde aquí puede:
+# Iniciar servicios
+# Detener servicios
+# Reiniciar servicios
 
-1.	Entrar a practica_webmin 
-2.	Click en Create File 
-3.	Nombre: archivo.txt
-4.	Editar y guardar 
+# Ejemplo:
+# Seleccionar servicio sshd
+# Usar Start / Stop / Restart
 
-# Eliminar archivo
-1.	Seleccionar archivo.txt 
-2.	Click en Delete 
 
-# Eliminar directorio
-1.	Volver atrás 
-2.	Seleccionar practica_webmin 
-3.	Click en Delete 
+# -----------------------------------------------------------------------------------
+# CONFIGURACIÓN DE RED
+# -----------------------------------------------------------------------------------
 
-=====================================================================================
+# Ir en Webmin a:
+# Networking -> Network Configuration
+
+# Luego:
+# Network Interfaces
+
+# Seleccionar interfaz de red
+
+# Configurar:
+# Static Configuration
+# IP Address
+# Netmask
+# Gateway
+
+# Guardar cambios
+
+
+# -----------------------------------------------------------------------------------
+# ADMINISTRACIÓN DE SOFTWARE
+# -----------------------------------------------------------------------------------
+
+# Ir en Webmin a:
+# System -> Software Packages
+
+# Instalar paquete:
+# Seleccionar "Package from YUM"
+# Escribir nombre del paquete
+# Click en Install
+
+# Actualizar paquetes:
+# System -> Software Package Updates
+
+# Eliminar paquetes:
+# Buscar paquete instalado
+# Click en Remove
+
+
+# -----------------------------------------------------------------------------------
+# GESTIÓN DE ARCHIVOS Y DIRECTORIOS
+# -----------------------------------------------------------------------------------
+
+# Ir en Webmin a:
+# Tools -> File Manager
+
+# Desde aquí puede:
+
+# Explorar directorios
+# Crear carpetas
+# Crear archivos
+# Editar archivos
+# Eliminar archivos/directorios
+
+
+# -----------------------------------------------------------------------------------
+# MONITORIZACIÓN DEL SISTEMA
+# -----------------------------------------------------------------------------------
+
+# Ir en Webmin a:
+# System -> System and Server Status
+
+# Permite monitorear:
+# Uso de CPU
+# Uso de Memoria RAM
+# Espacio en Disco
+# Estado de Servicios
+
+# Para procesos activos:
+# System -> Running Processes
+
+# Permite visualizar:
+# Procesos en ejecución
+# Consumo de CPU
+# Consumo de RAM
+
+
+=================================================================================================================================
 Laboratorio 9.2: Desliegue de una VM con terraform en Digital Ocean
-=====================================================================================
+=================================================================================================================================
 
-Proceda a instalar Terraform en la VM Server https://developer.hashicorp.com/terraform/install
-desplegar una VM usando terraform en una VM de digital ocean con las siguientes spec.
+1- Proceda a instalar Terraform en la VM Server https://developer.hashicorp.com/terraform/install
+2- Desplegar una VM usando terraform en una VM de digital ocean con las siguientes spec.
 image: ubuntu-22-04-x64
 name:OS3vm
 region:nyc1
 size:s-1vcpu-1gb
 ssh_key [llavePublicaDeTuServerAnsible]
 
-Validar la creacion de la VM ingresando via SSH y tambien por el portal web de digital Ocean para validar que el despliegue se realzio de forma correcta.
+3- Validar la creacion de la VM ingresando via SSH y tambien por el portal web de digital Ocean para validar que el despliegue se realzio de forma correcta.
 
-# Ir a API y crear un nuevo token
-Darle permisos de escritura y guardarlo
+# -----------------------------------------------------------------------------------
+# Terraform es una herramienta de Infrastructure as Code (IaC)
+# que permite desplegar infraestructura mediante archivos de configuración.
+# En esta práctica se utilizará para crear una VM en DigitalOcean.
+# -----------------------------------------------------------------------------------
 
-# Instalar terraform en RHEL
+# -----------------------------------------------------------------------------------
+# CREAR TOKEN DE API EN DIGITALOCEAN
+# -----------------------------------------------------------------------------------
 
+# Ir al portal de DigitalOcean:
+# API -> Tokens/Keys -> Generate New Token
+
+# Asignar permisos de escritura (Write)
+
+# Guardar el token generado para usarlo en Terraform.
+
+
+# -----------------------------------------------------------------------------------
+# INSTALACIÓN DE TERRAFORM EN RHEL
+# -----------------------------------------------------------------------------------
+
+# Instalar utilidades de repositorio
 sudo dnf install -y yum-utils
+
+# Agregar repositorio oficial de HashiCorp
 sudo dnf config-manager --add-repo https://rpm.releases.hashicorp.com/RHEL/hashicorp.repo
 
-sudo sed -i 's/$releasever/9/g' /etc/yum.repos.d/hashicorp.repo ##Esto obliga al sistema a usar los repositorios de RHEL 9 #
+# Forzar uso de repositorio RHEL 9 si es necesario
+sudo sed -i 's/$releasever/9/g' /etc/yum.repos.d/hashicorp.repo
 
+# Instalar Terraform
 sudo dnf install terraform -y
+
+# Verificar instalación
 terraform -version
 
-## Crear la llave ssh
-ssh-keygen -t rsa
-esta en: ~/.ssh/id_rsa.pub
 
-## Crear una carpeta para el proyecto
+# -----------------------------------------------------------------------------------
+# GENERAR LLAVE SSH PARA EL DESPLIEGUE
+# -----------------------------------------------------------------------------------
+
+# Crear par de llaves SSH
+ssh-keygen -t rsa
+
+# La llave pública quedará en:
+# ~/.ssh/id_rsa.pub
+
+cat /home/egalan/.ssh/id_rsa.pub
+
+# -----------------------------------------------------------------------------------
+# CREAR DIRECTORIO DEL PROYECTO
+# -----------------------------------------------------------------------------------
 
 mkdir ~/do_terraform
 cd ~/do_terraform
-export DIGITALOCEAN_TOKEN="token de digital ocean"
 
-## Crear el archivo de configuracion
+
+# -----------------------------------------------------------------------------------
+# EXPORTAR TOKEN DE DIGITALOCEAN
+# -----------------------------------------------------------------------------------
+
+export DIGITALOCEAN_TOKEN="TOKEN_DE_DIGITALOCEAN"
+
+
+# -----------------------------------------------------------------------------------
+# CREAR ARCHIVO DE CONFIGURACIÓN TERRAFORM
+# -----------------------------------------------------------------------------------
 
 nano main.tf
 
+
+# Contenido del archivo main.tf
 terraform {
   required_providers {
     digitalocean = {
-      source = "digitalocean/digitalocean"
+      source  = "digitalocean/digitalocean"
       version = "~> 2.0"
     }
   }
@@ -175,166 +297,390 @@ output "ip_address" {
   value = digitalocean_droplet.os3_vm.ipv4_address
 }
 
-## Desplegar la VM
+
+# -----------------------------------------------------------------------------------
+# DESPLIEGUE DE LA VM
+# -----------------------------------------------------------------------------------
+
+# Inicializar Terraform
 terraform init
+
+# Validar cambios que se aplicarán
 terraform plan
+
+# Crear la infraestructura
 terraform apply
 
-## Validacion
+# Escribir:
+# yes
 
-ssh root@ip_terraform y en digitalocean
 
-## Destruir
+# -----------------------------------------------------------------------------------
+# VALIDACIÓN DEL DESPLIEGUE
+# -----------------------------------------------------------------------------------
+
+# Conectarse por SSH a la VM creada
+ssh root@IP_GENERADA
+
+# También validar en el portal web de DigitalOcean
+# que la VM fue creada correctamente.
+
+
+# -----------------------------------------------------------------------------------
+# ELIMINAR LA INFRAESTRUCTURA
+# -----------------------------------------------------------------------------------
 
 terraform destroy
 
 
-==========================================================================================
+# -----------------------------------------------------------------------------------
+# MODIFICAR PARÁMETROS DE LA VM DESPLEGADA
+# -----------------------------------------------------------------------------------
 
+# Si desea cambiar el sistema operativo:
+# Modificar el parámetro "image"
+
+# Ejemplo Ubuntu:
+image = "ubuntu-22-04-x64"
+
+# Ejemplo Rocky Linux 9:
+image = "rockylinux-9-x64"
+
+# Ejemplo Rocky Linux 8:
+image = "rockylinux-8-x64"
+
+# IMPORTANTE:
+# El valor exacto depende del nombre de imagen disponible en DigitalOcean.
+# Puede verificarse en la documentación oficial o con:
+doctl compute image list
+
+# Pero para que funcione hay que tener instalado y autenticado el CLI de DigitalOcean (doctl).
+
+# Instalarlo
+sudo dnf install snapd -y
+sudo snap install doctl
+
+# Autenticarlo
+doctl auth init
+
+# Luego se puede ejecutar:
+doctl compute image list
+
+# -----------------------------------------------------------------------------------
+# CAMBIAR NOMBRE DE LA MÁQUINA
+# -----------------------------------------------------------------------------------
+
+# Modificar el parámetro:
+name = "OS3vm"
+
+# Ejemplo:
+name = "ServidorWeb01"
+
+
+# -----------------------------------------------------------------------------------
+# CAMBIAR REGIÓN DE DESPLIEGUE
+# -----------------------------------------------------------------------------------
+
+# Modificar:
+region = "nyc1"
+
+# Ejemplos:
+# nyc1 = New York 1
+# nyc3 = New York 3
+# sfo3 = San Francisco 3
+# ams3 = Amsterdam 3
+
+
+# -----------------------------------------------------------------------------------
+# CAMBIAR TAMAÑO / RECURSOS DE LA VM
+# -----------------------------------------------------------------------------------
+
+# Modificar:
+size = "s-1vcpu-1gb"
+
+# Ejemplos:
+# s-1vcpu-2gb
+# s-2vcpu-2gb
+# s-2vcpu-4gb
+
+# Nota en value puede cambiar el nombre dependiendo del que coloquemos en (resource "digitalocean_droplet" "os3_vm" {)
+# -----------------------------------------------------------------------------------
+# RESUMEN DE PARÁMETROS MODIFICABLES
+# -----------------------------------------------------------------------------------
+
+# image  -> Sistema operativo / versión
+# name   -> Nombre de la VM
+# region -> Datacenter de despliegue
+# size   -> CPU / RAM asignada
+# ssh_keys -> Llaves autorizadas para acceso SSH
+
+
+======================================================================================================================
 Laboratorio 9.3: Instalacion de Ansible
-==========================================================================================
+======================================================================================================================
 
-Instalar ansible en la VM-Server (que funionara como ansible controller) junto a todas sus dependencias
-Configurar ambos equipos clientes (la VM de digital ocean y la VM de windows) para que sean compatibles con el ansible controller
-Crea un usuario llamado ansible con permisos de administrador (en el caso de windows y sudoers en el caso de linux) 
-El usuario ansible puede iniciar sesión en ansible1 usando ssh, basándose en par de llaves ssh sin contraseña.
-Crear un inventario de ansible (/etc/ansible/host) y crear un grupo llamado [win] para la pc de windows y uno llamado [linux] para la VM de linux
-pruebe la conexion a ambos host utilizando el modulo ping
+1- Instalar ansible en la VM-Server (que funionara como ansible controller) junto a todas sus dependencias
+2- Configurar ambos equipos clientes (la VM de digital ocean y la VM de windows) para que sean compatibles con el ansible controller
+3- Crea un usuario llamado ansible con permisos de administrador (en el caso de windows y sudoers en el caso de linux) 
+4- El usuario ansible puede iniciar sesión en ansible1 usando ssh, basándose en par de llaves ssh sin contraseña.
+5- Crear un inventario de ansible (/etc/ansible/host) y crear un grupo llamado [win] para la pc de windows y uno llamado [linux] para la VM de linux
+6- Pruebe la conexion a ambos host utilizando el modulo ping
 
-# Parte 1 #
 
-# Instalar ansible y las librerías necesarias para windows (En RHEL 9)
+# -----------------------------------------------------------------------------------
 
+# Ansible es una herramienta de automatización que permite administrar
+# múltiples servidores desde un nodo controlador usando SSH (Linux)
+# o WinRM (Windows).
+# -----------------------------------------------------------------------------------
+
+
+# -----------------------------------------------------------------------------------
+# INSTALACIÓN DE ANSIBLE EN EL CONTROLLER
+# -----------------------------------------------------------------------------------
+
+# Instalar Python PIP
 sudo dnf install python3-pip -y
+
+# Instalar Ansible y soporte WinRM para Windows
 pip3 install ansible pywinrm
 
-# Crear el usuario ansible en el controlador (RHEL 9)
+# Verificar instalación
+ansible --version
 
+
+# -----------------------------------------------------------------------------------
+# CREAR USUARIO ANSIBLE EN EL CONTROLLER
+# -----------------------------------------------------------------------------------
+
+# Crear usuario ansible
 sudo useradd ansible
+
+# Asignar contraseña
 sudo passwd ansible
 
-# Crear las llaves SSH para el usuario ansible
+cat /home/egalan/.ssh/id_rsa.pub
 
+# -----------------------------------------------------------------------------------
+# GENERAR LLAVES SSH DEL USUARIO ANSIBLE
+# -----------------------------------------------------------------------------------
+
+# Cambiar al usuario ansible
 su - ansible
+
+# Generar par de llaves SSH sin contraseña
 ssh-keygen -t rsa
 
+# La llave pública quedará en:
+# /home/ansible/.ssh/id_rsa.pub
 
-# Parte 2 #
+# Copiar la llave publica
+cat ~/.ssh/id_rsa.pub
 
-#Entrar a la VM de terraform en Digital Ocean
+# -----------------------------------------------------------------------------------
+# CONFIGURAR CLIENTE LINUX (DIGITALOCEAN)
+# -----------------------------------------------------------------------------------
 
-ssh root@ip_terraform
+# Conectarse a la VM Linux remota
+ssh root@IP_TERRAFORM
 
-# Crear el usuario ansible y darle permisos de sudo
-
+# Crear usuario ansible
 adduser ansible
+
+# Dar privilegios sudo sin contraseña
 echo "ansible ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/ansible
 
-# (En RHEL 9)
-
-ssh-keygen -t rsa
-cat ~/.ssh/id_rsa.pub (copiar todo)
-
-# En la VM de Digi
-
+# Crear directorio SSH del usuario
 su - ansible
 mkdir ~/.ssh
 chmod 700 ~/.ssh
+
+# Crear archivo authorized_keys
 nano ~/.ssh/authorized_keys
- (AQUI VA LA LLAVE DE LA MAQUINA _USUARIO egalan_ )
+
+# Pegar dentro la llave pública del usuario ansible del controller:
+# /home/ansible/.ssh/id_rsa.pub
+
+# Ajustar permisos correctos
 chmod 600 ~/.ssh/authorized_keys
- 
-# En RHEL 9 normal, como usuario ansible
 
-ssh-keygen -t rsa
-cat ~/.ssh/id_rsa.pub (copiar todo)
 
-# En la VM de Digi
+# -----------------------------------------------------------------------------------
+# VALIDAR CONEXIÓN SSH AL CLIENTE LINUX
+# -----------------------------------------------------------------------------------
 
-su - ansible
-nano ~/.ssh/authorized_keys
- (Pegamos también la llave del usuario ansible de la VM normal)
+# Desde el controller:
+ssh ansible@IP_TERRAFORM
 
-# En RHEL 9, como usuario ansible
+# Debe ingresar sin solicitar contraseña.
 
-ssh ansible@ip_digi_terraform
 
-# Parte 3 #
+# -----------------------------------------------------------------------------------
+# CONFIGURAR CLIENTE WINDOWS PARA ANSIBLE
+# -----------------------------------------------------------------------------------
 
-# En windows 
+# En Windows:
+# Crear usuario local llamado:
+# ansible
 
-Crear un usuario local llamado ansible y agregarlo al grupo de administradores
+# Agregarlo al grupo Administradores:
+# Configuración -> Cuentas -> Otros Usuarios
+# Crear usuario local -> Cambiar tipo de cuenta -> Administrador
 
-Configuración -> cuentas -> familia y otros usuarios -> agregar otra persona a este equipo -> No tengo los datos... -> sin cuenta Microsoft -> llenar -> siguiente
 
-Seleccionamos el user -> cambiar tipo de cuenta -> administrador
+# -----------------------------------------------------------------------------------
+# HABILITAR WINRM EN WINDOWS
+# -----------------------------------------------------------------------------------
 
-# Habilitar la administracion remota
-
-Abrir powershell como adminstrador:
+# Abrir PowerShell como Administrador y ejecutar:
 
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+
 $url = "https://raw.githubusercontent.com/ansible/ansible/stable-2.9/examples/scripts/ConfigureRemotingForAnsible.ps1"
+
 $file = "$env:temp\ConfigureRemotingForAnsible.ps1"
+
 (New-Object -TypeName System.Net.WebClient).DownloadFile($url, $file)
+
 powershell.exe -ExecutionPolicy ByPass -File $file
 
-#Eso descarga un script para instalar el ansible automaticamente
+# Este script habilita y configura WinRM automáticamente para Ansible.
 
-## CUARTA PARTE ##
 
-# (E RHEL 9) usuario egalan
+# -----------------------------------------------------------------------------------
+# CREAR INVENTARIO DE ANSIBLE
+# -----------------------------------------------------------------------------------
 
-Para crear el inventario, creamos el directorio y el archivo
-
+# Crear directorio de Ansible
 sudo mkdir -p /etc/ansible
+
+# Crear archivo hosts
 sudo nano /etc/ansible/hosts
 
+
+# Contenido del inventario:
 [linux]
-159.89.55.216 ansible_user=ansible
+IP_TERRAFORM ansible_user=ansible
 
 [win]
-192.168.0.103 ansible_user=ansible ansible_password=1234 ansible_connection=winrm ansible_winrm_server_cert_validation=ignore
+IP_WINDOWS ansible_user=ansible ansible_password=CONTRASEÑA_WINDOWS \
+ansible_connection=winrm \
+ansible_winrm_server_cert_validation=ignore
 
-# Hacer ping
+# Deben reemplazarse tanto la ip como la contraseña con la que pusimos al user Ansible en windows
 
+# -----------------------------------------------------------------------------------
+# PROBAR CONECTIVIDAD CON HOSTS LINUX
+# -----------------------------------------------------------------------------------
+
+# Probar módulo ping Linux
 ansible linux -m ping
+
+# Resultado esperado:
+# SUCCESS => pong
+
+
+# -----------------------------------------------------------------------------------
+# PROBAR CONECTIVIDAD CON HOSTS WINDOWS
+# -----------------------------------------------------------------------------------
+
+# Probar módulo win_ping Windows
 ansible win -m win_ping
 
-===========================================================================================
+# Resultado esperado:
+# SUCCESS => pong
+
+
+# -----------------------------------------------------------------------------------
+# RESULTADO ESPERADO
+# -----------------------------------------------------------------------------------
+
+# El controlador Ansible podrá administrar ambos hosts:
+# - Linux mediante SSH con llaves sin contraseña
+# - Windows mediante WinRM
+
+============================================================================================================================
 Laboratorio 9.4: Comandos Ad-Hoc 
-===========================================================================================
+============================================================================================================================
 
-Utilizando el modulo win_copy utilize un comando ad-hoc que copie un archivo txt ubicado en el escritorio de la maquina ansible2 a la carpeta de documentos
-Utilizando el modulo reboot utilize un comando ad-hoc que reinicie la VM ansible 1
+1- Utilizando el modulo win_copy utilize un comando ad-hoc que copie un archivo txt ubicado en el escritorio de la maquina ansible2 a la carpeta de documentos
+2- Utilizando el modulo reboot utilize un comando ad-hoc que reinicie la VM ansible 1
 
-# Mover un archivo en windows
+# -----------------------------------------------------------------------------------
 
-crear en el escritorio un archivo .txt con un nombre de nuestra eleccion
+# Los comandos Ad-Hoc permiten ejecutar tareas rápidas en hosts administrados
+# sin necesidad de crear un Playbook completo.
+# -----------------------------------------------------------------------------------
 
+
+# -----------------------------------------------------------------------------------
+# USAR MÓDULO win_copy PARA COPIAR ARCHIVO EN WINDOWS
+# -----------------------------------------------------------------------------------
+
+# Crear manualmente en el Escritorio de la máquina Windows (ansible2)
+# un archivo de texto llamado:
+# tortola.txt
+
+# Ejecutar comando Ad-Hoc desde el Ansible Controller
 ansible win -m win_copy -a "src='C:/Users/Estephani/Desktop/tortola.txt' dest='C:/Users/Estephani/Documents/tortola.txt' remote_src=yes"
 
+# Explicación:
+# src        -> Ruta origen del archivo en el host Windows remoto
+# dest       -> Ruta destino donde se copiará el archivo
+# remote_src -> Indica que el archivo ya existe en la máquina remota
+#               (Windows) y no en el controller
 
-# Reiniciar la VM de Digital ocean
+# Resultado esperado:
+# El archivo tortola.txt será copiado desde Desktop hacia Documents.
 
-ansible linux -m reboot -b 
 
-=========================================================================================
+# -----------------------------------------------------------------------------------
+# USAR MÓDULO reboot PARA REINICIAR VM LINUX
+# -----------------------------------------------------------------------------------
+
+# Reiniciar la VM Linux (DigitalOcean / ansible1)
+ansible linux -m reboot -b
+
+# Explicación:
+# reboot -> Reinicia el host remoto Linux
+# -b     -> Ejecuta la tarea con privilegios elevados (become/sudo)
+
+# Resultado esperado:
+# La VM Linux se reiniciará remotamente desde Ansible.
+
+
+# -----------------------------------------------------------------------------------
+# VALIDACIÓN
+# -----------------------------------------------------------------------------------
+
+# Para validar que Windows copió el archivo:
+# Abrir Documents en la VM Windows y confirmar existencia de tortola.txt
+
+# Para validar el reinicio Linux:
+# Esperar reconexión del host y probar:
+ansible linux -m ping
+
+===============================================================================================================================
 Laboratorio 9.5: Playbooks 
-=========================================================================================
+===============================================================================================================================
 
-Crear un playbook para instalar la aplicacion notepad++ en la maquina ansible2 (Windows)
-Crea un playbook en la maquina ansible1 (linux) para que instale NGINX e inicie el servicio
+1- Crear un playbook para instalar la aplicacion notepad++ en la maquina ansible2 (Windows)
+2- Crea un playbook en la maquina ansible1 (linux) para que instale NGINX e inicie el servicio
 
+# ----------------------------------------------------------------------------
+# PLAYBOOK 1 - INSTALAR NOTEPAD++ EN WINDOWS
+# ----------------------------------------------------------------------------
 
-# Playbook de windows (notepad++)
-
+# Crear el archivo del playbook para Windows
 nano instalar_notepad.yml
 
+# Agregar el siguiente contenido al archivo:
 ---
-- name: Instalacion de aplicaciones en Windows
+- name: Instalar Notepad++ en Windows
   hosts: win
+
   tasks:
+
     - name: Instalar Chocolatey
       win_chocolatey:
         name: chocolatey
@@ -344,37 +690,86 @@ nano instalar_notepad.yml
       win_chocolatey:
         name: notepadplusplus
         state: present
-        
-# Playbook para Linux (NGINX)
 
+# Guardar el archivo y salir del editor.
+
+# Ejecutar el playbook sobre el grupo [win] definido en el inventario
+ansible-playbook instalar_notepad.yml
+
+# Validación:
+# Verificar en la máquina Windows que Notepad++ haya sido instalado correctamente.
+
+
+
+# ----------------------------------------------------------------------------
+# PLAYBOOK 2 - INSTALAR Y CONFIGURAR NGINX EN LINUX
+# ----------------------------------------------------------------------------
+
+# Crear el archivo del playbook para Linux
 nano instalar_nginx.yml
 
+# Agregar el siguiente contenido al archivo:
 ---
-- name: Configurar Servidor Web NGINX
+- name: Instalar y Configurar NGINX en Linux
   hosts: linux
   become: yes
+
   tasks:
-    - name: Actualizar repositorios e instalar NGINX
+
+    - name: Actualizar cache de paquetes del sistema
+      apt:
+        update_cache: yes
+
+    - name: Instalar NGINX
       apt:
         name: nginx
         state: present
-        update_cache: yes
 
-    - name: Iniciar el servicio y habilitarlo al arranque
+    - name: Iniciar servicio NGINX y habilitarlo al arranque
       service:
         name: nginx
         state: started
         enabled: yes
-        
-# Ejecutar el de windows
 
-ansible-playbook instalar_notepad.yml
+# Guardar el archivo y salir del editor.
 
-# Ejecutar el de linux
-
+# Ejecutar el playbook sobre el grupo [linux] definido en el inventario
 ansible-playbook instalar_nginx.yml
 
-# Ingresar or el navegador con la direccion de la maquina de Digital ocean
+# Validación:
+# Acceder desde navegador a la IP de la VM Linux para confirmar que NGINX responde.
+http://IP_DE_LA_VM_LINUX
 
-http://159.89.55.216
+
+
+# ----------------------------------------------------------------------------
+# VERIFICACIONES ADICIONALES (OPCIONALES)
+# ----------------------------------------------------------------------------
+
+# Confirmar desde Ansible que NGINX está instalado
+ansible linux -m shell -a "nginx -v"
+
+# Confirmar estado del servicio NGINX
+ansible linux -m shell -a "systemctl status nginx"
+
+# Confirmar desde Ansible que Notepad++ está instalado en Windows
+ansible win -m win_shell -a "Get-WmiObject Win32_Product | findstr Notepad"
+
+
+
+# ----------------------------------------------------------------------------
+# EXPLICACIÓN DEL PROCESO
+# ----------------------------------------------------------------------------
+# Un Playbook es un archivo YAML que permite automatizar múltiples tareas
+# en uno o varios equipos administrados por Ansible.
+#
+# En esta práctica:
+#
+# - Se utilizó el módulo win_chocolatey para instalar software en Windows.
+# - Se utilizó el módulo apt para instalar paquetes en Linux Ubuntu/Debian.
+# - Se utilizó el módulo service para administrar servicios del sistema.
+#
+# Esto permite ejecutar configuraciones completas con un solo comando,
+# facilitando la administración masiva de infraestructura.
+# ----------------------------------------------------------------------------
 
