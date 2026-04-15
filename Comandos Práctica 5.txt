@@ -1,352 +1,533 @@
 =====================================================================================================================================
 Laboratorio 5.1:
 =====================================================================================================================================
+1- Crear una carpeta en su servidor primario y dentro crear 100 archivos (con el comando touch)
+2- Utilizando rsync, copiar el contenido de la carpeta a el servidor remoto
+3- Crear un script con el comando de sincronizacion de la carpeta y luego crear un crontab para que se sincronizen cada 1 minuto. cree un archivo en el server primario y luego compruebe que el crontab esta funcionando validando en el servidor secundario si la carpeta se creo
 
+#----------------------------------------------------------
+# Rsync es una herramienta de sincronización de archivos y directorios que permite copiar datos entre ubicaciones locales o remotas de forma eficiente.
+Su principal ventaja es que solo transfiere los cambios realizados, por lo que es ideal para backups, replicación de servidores y sincronización automática de carpetas.
+#----------------------------------------------------------
 
----------------------------------------------------
-# EN EL NODO PRINCIPAL
----------------------------------------------------
+# ----------------------------------------------------------------------------
+# EN EL SERVIDOR PRINCIPAL
+# ----------------------------------------------------------------------------
 
-# Ir al Escritorio
+# Ir al Escritorio del usuario.
+# Esta será la ubicación donde se trabajará la carpeta origen.
 cd /home/egalan/Escritorio/
 
-# Crear carpeta origen
+# Crear carpeta origen que contendrá los archivos a sincronizar.
 mkdir rsync_1
 
-# Entrar a la carpeta
+# Entrar a la carpeta recién creada.
 cd rsync_1
 
-# Crear 100 archivos de prueba
+# Crear 100 archivos de prueba automáticamente.
+# Se generan archivos desde archivo001.txt hasta archivo100.txt.
 touch archivo{001..100}.txt
 
-# Verificar archivos creados
+# Verificar cantidad de archivos creados.
+# Debe mostrar 100.
 ls | wc -l
+
+# Listar archivos creados para confirmación visual.
 ls
 
 
-# ==========================================
-# EN EL SERVIDOR REMOTO
-# ==========================================
+# ----------------------------------------------------------------------------
+# EN EL SERVIDOR REMOTO / SECUNDARIO
+# ----------------------------------------------------------------------------
 
-# Ir al Escritorio
+# Ir al Escritorio del usuario remoto.
 cd /home/egalan/Escritorio/
 
-# Crear carpeta destino
+# Crear carpeta destino donde se recibirá la sincronización.
 mkdir rsync_2
 
-# Verificar creación
+# Verificar que la carpeta fue creada correctamente.
 ls
 
 
-# ==========================================
-# CONFIGURACION DE ACCESO SSH (DESDE NODO PRINCIPAL)
-# ==========================================
+# ----------------------------------------------------------------------------
+# CONFIGURACIÓN DE ACCESO SSH DESDE EL SERVIDOR PRINCIPAL
+# ----------------------------------------------------------------------------
 
-# Crear par de llaves SSH
+# Generar par de llaves SSH.
+# Esto permitirá autenticación automática sin contraseña,
+# necesaria para que rsync funcione dentro de cron.
 ssh-keygen
 
-# Copiar llave pública al servidor remoto
+# Copiar llave pública al servidor remoto.
+# Autoriza al servidor principal a conectarse automáticamente al remoto.
 ssh-copy-id egalan@IP_DEL_SERVIDOR_REMOTO
 
 
-# ==========================================
-# SINCRONIZACION MANUAL INICIAL
-# ==========================================
+# ----------------------------------------------------------------------------
+# SINCRONIZACIÓN MANUAL INICIAL
+# ----------------------------------------------------------------------------
 
-# Ejecutar rsync manualmente
-rsync -avzP /home/egalan/Escritorio/rsync_1/ egalan@192.168.0.118:/home/egalan/Escritorio/rsync_2/
+# Ejecutar sincronización manual de prueba.
+# Esto copia el contenido de rsync_1 hacia rsync_2 usando SSH.
+#
+# Parámetros usados:
+# -a = modo archivo (preserva permisos, estructura, fechas)
+# -v = modo detallado/verbose
+# -z = comprime datos durante transferencia
+# -P = muestra progreso y permite reanudar transferencias
+rsync -avzP /home/egalan/Escritorio/rsync_1/ \
+egalan@192.168.0.118:/home/egalan/Escritorio/rsync_2/
 
 
-# ==========================================
-# CREAR SCRIPT DE AUTOMATIZACION
-# ==========================================
+# ----------------------------------------------------------------------------
+# CREACIÓN DEL SCRIPT DE AUTOMATIZACIÓN
+# ----------------------------------------------------------------------------
 
-# Ir a la carpeta origen
-cd /home/egalan/Escritorio/rsync_1
+# Crear script que contendrá el comando de sincronización.
+nano /home/egalan/Escritorio/rsync_1/rsync.sh
 
-# Crear script
-nano rsync.sh
+# Dentro poner:
 
-# Contenido del script:
 #!/bin/bash
-rsync -avzP /home/egalan/Escritorio/rsync_1/ egalan@192.168.0.118:/home/egalan/Escritorio/rsync_2/
 
-# Guardar y salir 
+# Script de sincronización automática con rsync
+rsync -avzP /home/egalan/Escritorio/rsync_1/ \
+egalan@192.168.0.118:/home/egalan/Escritorio/rsync_2/
 
-# Dar permisos de ejecución
-chmod +x rsync.sh
+CTRL + O -> CTRL + X
+
+# Dar permisos de ejecución al script.
+# Esto permite que cron pueda ejecutarlo automáticamente.
+chmod +x /home/egalan/Escritorio/rsync_1/rsync.sh
 
 
-# ==========================================
-# PROGRAMAR TAREA AUTOMATICA CON CRON
-# ==========================================
+# ----------------------------------------------------------------------------
+# PROGRAMACIÓN AUTOMÁTICA CON CRON
+# ----------------------------------------------------------------------------
 
-# Editar crontab del usuario
+# Editar el crontab del usuario actual.
 crontab -e
 
-# Ejecutar cada minuto
+# Agregar la siguiente línea para ejecutar el script cada minuto:
 * * * * * /home/egalan/Escritorio/rsync_1/rsync.sh
 
-# Guardar y salir (:wq)
+# Formato del cron:
+# minuto hora día_mes mes día_semana comando
+#
+# En este caso:
+# * * * * * = cada minuto de cada hora de cada día
 
+# ----------------------------------------------------------------------------
+# PRUEBA FINAL DE FUNCIONAMIENTO
+# ----------------------------------------------------------------------------
 
-# ==========================================
-# PRUEBA FINAL
-# ==========================================
-
-# Crear archivo nuevo en carpeta origen
+# Crear un nuevo archivo en la carpeta origen.
+# Este archivo servirá para comprobar la sincronización automática.
 cd /home/egalan/Escritorio/rsync_1
 touch prueba.txt
 
-# Esperar 1 minuto
-# El archivo debe sincronizarse automáticamente en:
-# /home/egalan/Escritorio/rsync_2 en el servidor remoto
+# Esperar aproximadamente 1 minuto.
+# Cron ejecutará el script y sincronizará automáticamente el nuevo archivo.
 
+# ----------------------------------------------------------------------------
+# VERIFICACIÓN EN EL SERVIDOR REMOTO
+# ----------------------------------------------------------------------------
 
-# ==========================================
-# VERIFICACION EN SERVIDOR REMOTO
-# ==========================================
-
-
-# Verificar contenido
+# Entrar a la carpeta destino en el servidor secundario.
 cd /home/egalan/Escritorio/rsync_2
+
+# Verificar cantidad de archivos sincronizados.
 ls | wc -l
+
+# Listar contenido y comprobar que aparece prueba.txt.
 ls
 
-
+====================================================================================================================================
+Laboratorio 5.2: Instalacion y configuracion del Cluster
 ====================================================================================================================================
 
+1- Instalar un Cluster de Alta disponibilidad (Utilizando la herramienta Heartbeat o Pacemaker) con 2 nodos (Servidor) en modo bridge . 2- Configurar una IP flotante para que el cluster funcione utilizando una misma Direccion IP
+3- Realizar las pruebas haciendo ping a la ip flotante provista por la solucion de HA y altarnando reinicios entre los servidores, el ping debe de mantenerse
 
-Comandos Practica 2:
+#---------------------------------------------------------------------------------------------------------------------------------------
+# Pacemaker: Es el motor de alta disponibilidad que decide qué recursos deben ejecutarse y en qué nodo, además de moverlos automáticamente cuando detecta fallos.
+Corosync: Es el servicio que permite la comunicación y sincronización entre los nodos del cluster, detectando si un nodo está activo o caído.
+PCS (Pacemaker/Corosync Configuration System): Es la herramienta de administración que se usa para configurar y controlar el cluster mediante comandos como pcs status, pcs resource, etc.
+#---------------------------------------------------------------------------------------------------------------------------------------
 
+# ----------------------------------------------------------------------------
+# CONFIGURACIÓN EN AMBOS NODOS DEL CLUSTER
+# ----------------------------------------------------------------------------
 
-# CONFIGURACION EN AMBOS NODOS
+# Asignar hostname al primer nodo.
+# Esto identifica de forma única al servidor dentro del cluster.
+hostnamectl set-hostname nodo1
 
+# Asignar hostname al segundo nodo.
+hostnamectl set-hostname nodo2
 
-# Configurar hostname
-hostnamectl set-hostname nodo1   # Ejecutar en nodo1
-hostnamectl set-hostname nodo2   # Ejecutar en nodo2
-
-# Editar archivo hosts
+# Editar archivo hosts en ambos nodos.
+# Aquí se registran los nombres de ambos servidores para resolución local.
 nano /etc/hosts
 
-# Contenido de /etc/hosts en ambos nodos:
-# 127.0.0.1   localhost
-# ::1         localhost
-  192.168.0.115 nodo1
-  192.168.0.118 nodo2
+# Dentro poner:
 
-# Verificar repositorios
+127.0.0.1   localhost
+::1         localhost
+
+192.168.0.115 nodo1
+192.168.0.118 nodo2
+
+
+# Verificar repositorios disponibles.
+# Se confirma que el sistema tiene acceso a los repos necesarios.
 dnf repolist --all
 
-# Habilitar repositorio de Alta Disponibilidad (RHEL 9)
-subscription-manager repos --enable=rhel-9-for-x86_64-highavailability-rpms
+# Habilitar repositorio de Alta Disponibilidad de RHEL.
+# Este repositorio contiene Pacemaker, Corosync y herramientas HA.
+subscription-manager repos \
+--enable=rhel-9-for-x86_64-highavailability-rpms
 
-# Verificar repositorio activo
+# Confirmar que el repositorio HA quedó activo.
 dnf repolist
 
-# Instalar paquetes necesarios
+# Instalar paquetes necesarios para el cluster.
+#
+# pacemaker -> Motor principal de alta disponibilidad
+# corosync  -> Comunicación/consenso entre nodos
+# pcs       -> Herramienta de administración del cluster
 dnf install -y pacemaker corosync pcs
 
-# Asignar contraseña al usuario del cluster (misma en ambos nodos)
+# Establecer contraseña al usuario hacluster en ambos nodos.
+# Esta cuenta es utilizada por PCS para autenticación interna del cluster.
 passwd hacluster
 
-# Habilitar e iniciar servicio pcsd
+# Habilitar e iniciar el servicio pcsd.
+# pcsd permite administrar remotamente los nodos del cluster.
 systemctl enable --now pcsd
 
-# Verificar estado del servicio
+# Verificar estado del servicio.
 systemctl status pcsd
 
+# ----------------------------------------------------------------------------
+# CONFIGURACIÓN DEL CLUSTER (SOLO EN NODO PRINCIPAL (nodo1))
+# ----------------------------------------------------------------------------
 
-# ==========================================
-# CONFIGURACION SOLO EN NODO PRINCIPAL (nodo1)
-# ==========================================
-
-# Autenticar nodos
+# Autenticar ambos nodos usando el usuario hacluster.
+# Esto establece confianza entre servidores para administración del cluster.
 pcs host auth nodo1 nodo2 -u hacluster -p CLAVE_CONFIGURADA
 
-# Crear el cluster
+# Crear y arrancar el cluster.
+# ClusterHA será el nombre lógico del cluster.
 pcs cluster setup ClusterHA nodo1 nodo2 --start --enable
 
-# Verificar estado del cluster
+# Verificar estado inicial del cluster.
 pcs status
 
-# Deshabilitar STONITH (modo laboratorio)
+# Deshabilitar STONITH para laboratorio.
+# STONITH reinicia nodos fallidos automáticamente;
+# se desactiva en entornos de prueba para simplificar la práctica.
 pcs property set stonith-enabled=false
 
-# Ignorar quorum (modo laboratorio)
+# Ignorar quorum.
+# En clusters de solo 2 nodos se usa en laboratorio
+# para evitar bloqueo cuando un nodo cae.
 pcs property set no-quorum-policy=ignore
 
-# Verificar nuevamente
+# Verificar estado nuevamente después de ajustes.
 pcs status
 
-# Crear IP flotante
-pcs resource create ip_ClusterHA ocf:heartbeat:IPaddr2 ip=192.168.0.120 cidr_netmask=24 op monitor interval=5s
+# ----------------------------------------------------------------------------
+# CREACIÓN DE LA IP FLOTANTE
+# ----------------------------------------------------------------------------
 
-# Verificar recurso creado
+# Crear recurso de IP virtual/flotante.
+# Esta IP será compartida por el cluster y migrará automáticamente
+# al nodo disponible en caso de falla del nodo activo.
+pcs resource create ip_ClusterHA \
+ocf:heartbeat:IPaddr2 \
+ip=192.168.0.120 \
+cidr_netmask=24 \
+op monitor interval=5s
+
+# Verificar que el recurso fue creado correctamente.
 pcs status
 
 
-# ==========================================
-# PRUEBA DE ALTA DISPONIBILIDAD
-# ==========================================
+# ----------------------------------------------------------------------------
+# PRUEBA DE ALTA DISPONIBILIDAD / FAILOVER
+# ----------------------------------------------------------------------------
 
-# Hacer ping a la IP flotante
+# Desde cualquier equipo de la red hacer ping a la IP flotante.
+# Esta IP debe responder independientemente del nodo activo.
 ping 192.168.0.120
 
-# Reiniciar el nodo donde esté corriendo la IP
+# Reiniciar el nodo que actualmente posee la IP flotante.
 reboot
 
-# La IP flotante debe migrar automáticamente al otro nodo
-# sin perder conectividad
+# Pacemaker detectará la caída del nodo
+# y moverá automáticamente la IP flotante al nodo secundario.
 
-===========================================================================================================================================================
-
-
-Practica 3:
+# El ping debe mantenerse activo o perder como máximo
+# uno o pocos paquetes durante la migración.
 
 
-# CONFIGURACION EN AMBOS NODOS
+========================================================================================================================================Laboratorio 5.3: Cluster de Alta Disponibilidad HTTP
+========================================================================================================================================
 
+1- Configura 2 servidores web (apache/NGINX). En cada uno desplieque una pagina html que especifique que servidor es (server1, Server2)
+2- Implementar HA en los servidores utilizando  KeepAlived. Validar  la Alta Disponibilidad del servicio apagando uno de los servidores y y accediendo al servicio de apache a traves de un navegador.
 
-# Configurar hostname
+#-----------------------------------------------------------------------------
+# Keepalived es una herramienta de alta disponibilidad que utiliza VRRP
+para administrar IPs flotantes/virtuales entre varios servidores.
+
+# Permite que un servicio siga disponible aunque el servidor principal falle,
+moviendo automáticamente la IP virtual al nodo secundario sin cambiar la dirección
+que usan los clientes para conectarse.
+#-----------------------------------------------------------------------------
+
+# ----------------------------------------------------------------------------
+# CONFIGURACIÓN BASE EN AMBOS NODOS
+# ----------------------------------------------------------------------------
+
+# Asignar hostname a cada servidor.
+# Esto permite identificarlos claramente dentro de la solución HA.
 hostnamectl set-hostname nodo1   # Ejecutar en nodo1
 hostnamectl set-hostname nodo2   # Ejecutar en nodo2
 
-# Editar archivo hosts
+# Editar resolución local de nombres en ambos nodos.
+# Esto permite que ambos servidores se reconozcan por nombre.
 nano /etc/hosts
 
-# Contenido en ambos nodos:
-# 127.0.0.1   localhost
-# ::1         localhost
-# 192.168.1.25 nodo1
-# 192.168.1.26 nodo2
+# Poner dentro:
 
+127.0.0.1   localhost
+::1         localhost
 
-# ==========================================
-# INSTALAR Y CONFIGURAR APACHE (AMBOS NODOS)
-# ==========================================
+192.168.1.25 nodo1
+192.168.1.26 nodo2
 
+CTRL + O -> CTRL + X
+
+# ----------------------------------------------------------------------------
+# OPCIÓN A - IMPLEMENTACIÓN CON APACHE HTTPD
+# ----------------------------------------------------------------------------
+
+# Instalar Apache en ambos nodos.
 dnf install httpd -y
 
+# Iniciar y habilitar servicio Apache.
 systemctl start httpd
 systemctl enable httpd
 
-# Crear pagina web
+# Crear página HTML en nodo1.
 nano /var/www/html/index.html
 
-# ---------- CONTENIDO EN NODO1 ----------
-# <html>
-# <head>
-# <title>Servidor 1</title>
-# </head>
-# <body>
-# <h1>Yo soy un pollito amarillo pese a cualquier circunstancia</h1>
-# <p>Este es el server 1</p>
-# </body>
-# </html>
+# Poner dentro:
 
-# ---------- CONTENIDO EN NODO2 ----------
-# <html>
-# <head>
-# <title>Servidor 2</title>
-# </head>
-# <body>
-# <h1>Yo tenia un pollito de colores que al minuto se murio</h1>
-# <p>Este es el server 2</p>
-# </body>
-# </html>
+<html>
+<head>
+<title>Servidor 1</title>
+</head>
+<body>
+<h1>Servidor Web Apache - Nodo 1</h1>
+<p>Este es el Server 1</p>
+</body>
+</html>
+
+CTRL + O -> CTRL + X
 
 
-# ==========================================
-# INSTALAR KEEPALIVED EN AMBOS NODOS
-# ==========================================
+# Crear página HTML en nodo2.
+nano /var/www/html/index.html
 
+# Poner dentro:
+
+<html>
+<head>
+<title>Servidor 2</title>
+</head>
+<body>
+<h1>Servidor Web Apache - Nodo 2</h1>
+<p>Este es el Server 2</p>
+</body>
+</html>
+
+CTRL + O -> CTRL + X
+
+# ----------------------------------------------------------------------------
+# INSTALACIÓN DE KEEPALIVED EN AMBOS NODOS
+# ----------------------------------------------------------------------------
+
+# Limpiar caché de paquetes.
 dnf clean all
+
+# Regenerar caché de repositorios.
 dnf makecache
+
+# Instalar Keepalived.
+# Keepalived gestionará la IP flotante mediante VRRP.
 dnf install keepalived -y
 
+# Verificar dependencias/librerías del binario.
 ldd /usr/sbin/keepalived
 
-
-# ==========================================
-# CONFIGURACION KEEPALIVED - NODO1 (MASTER)
-# ==========================================
-
-nano /etc/keepalived/keepalived.conf
-
-# global_defs {
-#    router_id NODO1
-# }
-#
-# vrrp_instance VI_1 {
-#     state MASTER
-#     interface ens160
-#     virtual_router_id 51
-#     priority 100
-#     advert_int 1
-#
-#     authentication {
-#         auth_type PASS
-#         auth_pass 1234
-#     }
-#
-#     virtual_ipaddress {
-#         192.168.1.200/24
-#     }
-# }
-
-
-# ==========================================
-# CONFIGURACION KEEPALIVED - NODO2 (BACKUP)
-# ==========================================
+# ----------------------------------------------------------------------------
+# CONFIGURACIÓN KEEPALIVED - NODO1 (MASTER)
+# ----------------------------------------------------------------------------
 
 nano /etc/keepalived/keepalived.conf
 
-# global_defs {
-#    router_id NODO2
-# }
-#
-# vrrp_instance VI_1 {
-#     state BACKUP
-#     interface ens160
-#     virtual_router_id 51
-#     priority 90
-#     advert_int 1
-#
-#     authentication {
-#         auth_type PASS
-#         auth_pass 1234
-#     }
-#
-#     virtual_ipaddress {
-#         192.168.1.200/24
-#     }
-# }
+# Poner dentro:
+
+global_defs {
+   router_id NODO1
+}
+
+vrrp_instance VI_1 {
+    state MASTER
+    interface ens160
+    virtual_router_id 51
+    priority 100
+    advert_int 1
+
+    authentication {
+        auth_type PASS
+        auth_pass 1234
+    }
+
+    virtual_ipaddress {
+        192.168.1.200/24
+    }
+}
+
+CTRL + O -> CTRL + X
 
 
-# ==========================================
-# INICIAR KEEPALIVED
-# ==========================================
+# ----------------------------------------------------------------------------
+# CONFIGURACIÓN KEEPALIVED - NODO2 (BACKUP)
+# ----------------------------------------------------------------------------
 
+nano /etc/keepalived/keepalived.conf
+
+# Poner dentro:
+
+global_defs {
+   router_id NODO2
+}
+
+vrrp_instance VI_1 {
+    state BACKUP
+    interface ens160
+    virtual_router_id 51
+    priority 90
+    advert_int 1
+
+    authentication {
+        auth_type PASS
+        auth_pass 1234
+    }
+
+    virtual_ipaddress {
+        192.168.1.200/24
+    }
+}
+
+CTRL + O -> CTRL + X
+
+# ----------------------------------------------------------------------------
+# INICIAR Y HABILITAR KEEPALIVED
+# ----------------------------------------------------------------------------
+
+# Recargar demonios de systemd.
 systemctl daemon-reexec
+
+# Iniciar y habilitar Keepalived.
 systemctl enable --now keepalived
+
+# Verificar estado del servicio.
 systemctl status keepalived
 
+# ----------------------------------------------------------------------------
+# VERIFICACIÓN DE LA IP FLOTANTE
+# ----------------------------------------------------------------------------
 
-# ==========================================
-# VERIFICACION
-# ==========================================
-
+# Comprobar qué nodo posee actualmente la IP virtual.
 ip a show ens160
 
-# Probar en navegador:
+# Acceder desde navegador:
 # http://192.168.1.200
 
-# Para probar failover (desde nodo1):
-# systemctl stop keepalived
-# La IP flotante debe pasar a nodo2
+# Debe mostrar la página del nodo MASTER actual.
 
+# ----------------------------------------------------------------------------
+# PRUEBA DE FAILOVER / ALTA DISPONIBILIDAD
+# ----------------------------------------------------------------------------
+
+# Simular caída del nodo principal.
+systemctl stop keepalived
+
+# Alternativamente puede apagarse/reiniciarse el nodo completo:
+# reboot
+
+# La IP flotante debe migrar automáticamente al nodo BACKUP.
+
+# Volver a acceder desde navegador:
+# http://192.168.1.200
+
+# Ahora debe mostrarse la página del segundo servidor.
+
+
+# -----------------------------------------------------
+# En caso de que deseen usar NGINX
+# -----------------------------------------------------
+
+# ----------------------------------------------------------------------------
+# OPCIÓN B - IMPLEMENTACIÓN CON NGINX
+# ----------------------------------------------------------------------------
+
+# Instalar NGINX en ambos nodos.
+dnf install nginx -y
+
+# Iniciar y habilitar servicio NGINX.
+systemctl start nginx
+systemctl enable nginx
+
+# Crear página HTML en nodo1.
+nano /usr/share/nginx/html/index.html
+
+# Poner dentro:
+
+<html>
+<head>
+<title>Servidor 1</title>
+</head>
+<body>
+<h1>Servidor Web NGINX - Nodo 1</h1>
+<p>Este es el Server 1</p>
+</body>
+</html>
+
+CTRL + O -> CTRL + X
+
+# Crear página HTML en nodo2.
+nano /usr/share/nginx/html/index.html
+
+# Poner dentro:
+
+<html>
+<head>
+<title>Servidor 2</title>
+</head>
+<body>
+<h1>Servidor Web NGINX - Nodo 2</h1>
+<p>Este es el Server 2</p>
+</body>
+</html>
+
+CTRL + O -> CTRL + X
 
 
 
