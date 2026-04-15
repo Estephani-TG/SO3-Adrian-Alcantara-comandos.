@@ -1,95 +1,524 @@
 ==============================================================================================
-Comandos Práctica 1:.
+Laboratorio 4.1: Instalar un servidor HTTP apache2/nginx
 ==============================================================================================
+1- Crear un website estatico html con la frase "Hola Mundo"
+2- Crear un host virtual y ponerlo a escuchar por el puerto 80 y que al ingresar acceda al website anterior
+3- Crear un website estatico html con su nombre, matricula y nombre de la materia
+4-  Crear un host virtual y ponerlo a escuchar por el puerto 8080 y que al ingresar acceda al website anterior
 
-  218  sudo dnf install httpd -y
-  219  systemctl start httpd
-  220  systemctl enable httpd
-  221  systemctl status httpd
-  222  sudo firewall-cmd --permanent --add-service=http
-  223  sudo firewall-cmd --permanent --add-port=8080/tcp
-  224  sudo firewall-cmd --reload
-  225  sudo mkadir -p /var/www/HolaMundo
-  226  sudo mkdir -p /var/www/HolaMundo
-  227  sudo nano /var/www/HolaMundo/index.html
-  228  Sudo chown -R apache:apache /var/www/HolaMundo
-  229  sudo chown -R apache:apache /var/www/HolaMundo
-  230  sudo chmod -R 755 /var/www/HolaMundo
-  231  sudo nano /etc/httpd/conf.d/HolaMundo.conf
-  232  sudo mkdir -p /var/www/datos
-  233  sudo nano /var/www/datos/index.html
-  234  Sudo chown -R apache:apache /var/www/datos
-  235  sudo chown -R apache:apache /var/www/datos
-  236  sudo chmod -R 755 /var/www/datos
-  237  sudo nano /etc/httpd/conf/httpd.conf
-  238  sudo nano /etc/httpd/conf.d/datos.conf
-  239  sudo systemctl restart httpd
-  240  systemctl status httpd
-  241  sudo nano /etc/httpd/conf.d/holamundo.conf
-  242  sudo systemctl restart httpd
-  243  sudo nano /etc/httpd/conf.d/HolaMundo.conf
-  244  sudo systemctl restart httpd
-  245  ip a
-  246  systemctl status httpd
-  247  ls -ld /var/www/holamundo
-  248  ls -ld /var/www/HolaMundo
-  249  sudo nano /etc/httpd/conf.d/HolaMundo.conf
-  250  sudo systemctl restart httpd
-  251  ip a
-  252  curl http://127.0.0.1
-  253  sudo nano /etc/httpd/conf/httpd.conf
-  254  sudo apachectl configtest
-  255  sudo systemctl restart httpd
-  256  curl http://127.0.0.1
-  257  curl http://127.0.0.1:8080
-  258  date
-  259  history
+# ----------------------------------------------------------------------------
+# APACHE HTTP SERVER (httpd)
+# ----------------------------------------------------------------------------
 
-===========================================================================================
-Comandos Practica 2:
-===========================================================================================
+# Instalar el servidor web Apache.
+# Este paquete provee el servicio HTTP para alojar sitios web.
+sudo dnf install httpd -y
 
-261  dnf install postfix s-nail cyrus-sasl cyrus-sasl-plain -y
-  262  systemctl enable --now postfix
-  263  systemctl status postfix
-  264  nano etc/postfix/main.cf
-  265  nano /etc/postfix/main.cf
-  266  nano /etc/postfix/sasl_passwd
-  267  postmap /etc/postfix/sasl_passwd
-  268  ls -l /etc/postfix/sasl_passwd*
-  269  chmod 600 /etc/postfix/sasl_passwd /etc/postfix/sasl_passwd.db
-  270  chown root:root /etc/postfix/sasl_passwd /etc/postfix/sasl_passwd.db
-  271  postmap /var/lib/postfix/smtp_scache
-  272  mkdir -p /var/lib/postfix
-  273  postmap /var/lib/postfix/smtp_scache
-  274  postmap hash:/var/lib/postfix/smtp_scache
-  275  postmap hash:/var/lib/postfix/smtp_scache
-  276  clear
-  277  systemctl restart postfix
-  278  systemctl status postfix
-  279  echo "Correo de prueba para practica 2" | mail -s "Prueba postfix" estephanitavarezgalan@gmail.com
-  280  echo "Correo de prueba para practica 2" | mail -s "Prueba postfix" estephanitavarezgalan@gmail.com
-  281  tail -f /var/log/maillog
-  282  echo "Estudiante: Estephani Tavarez Galan Matricula: 20250723" | mail -s "MambruSeFueALaGuerra" os3conadrian@gmail.com
-  283  tail -f /var/log/maillog
-  284  date
+# Iniciar el servicio Apache.
+# Esto pone el servidor web en funcionamiento inmediatamente.
+systemctl start httpd
+
+# Habilitar Apache al arranque.
+# Hace que el servicio inicie automáticamente con el sistema.
+systemctl enable httpd
+
+# Verificar el estado del servicio Apache.
+systemctl status httpd
+
+# Abrir el servicio HTTP en el firewall.
+# Permite tráfico entrante por el puerto 80.
+sudo firewall-cmd --permanent --add-service=http
+
+# Abrir el puerto 8080 en el firewall.
+# Se usará para el segundo host virtual.
+sudo firewall-cmd --permanent --add-port=8080/tcp
+
+# Aplicar cambios del firewall.
+sudo firewall-cmd --reload
+
+
+# ----------------------------------------------------------------------------
+# WEBSITE 1 - HOLA MUNDO (PUERTO 80)
+# ----------------------------------------------------------------------------
+
+# Crear directorio raíz del primer sitio web.
+sudo mkdir -p /var/www/HolaMundo
+
+# Crear archivo HTML principal del sitio.
+sudo nano /var/www/HolaMundo/index.html
+
+# Dentro poner:
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Hola Mundo</title>
+</head>
+<body>
+    <h1>Hola Mundo</h1>
+</body>
+</html>
+
+CTRL + O -> CTRL + X
+
+# Asignar Apache como propietario de los archivos del sitio.
+sudo chown -R apache:apache /var/www/HolaMundo
+
+# Asignar permisos de lectura/ejecución apropiados al directorio.
+sudo chmod -R 755 /var/www/HolaMundo
+
+# Crear archivo de configuración del Virtual Host para el puerto 80.
+sudo nano /etc/httpd/conf.d/HolaMundo.conf
+
+# Dentro poner:
+
+<VirtualHost *:80>
+    DocumentRoot /var/www/HolaMundo
+    DirectoryIndex index.html
+</VirtualHost> 
+
+CTRL + O -> CTRL + X
+
+# Reiniciar Apache para aplicar configuración del primer Virtual Host.
+sudo systemctl restart httpd
+
+# ----------------------------------------------------------------------------
+# WEBSITE 2 - DATOS PERSONALES (PUERTO 8080)
+# ----------------------------------------------------------------------------
+
+# Crear directorio raíz del segundo sitio web.
+sudo mkdir -p /var/www/datos
+
+# Crear archivo HTML del segundo sitio.
+sudo nano /var/www/datos/index.html
+
+# Dentro poner:
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Datos del Estudiante</title>
+</head>
+<body>
+    <h1>Estephani Tavarez Galán</h1>
+    <h2>2025-0723</h2>
+    <h2>Sistemas Operativos</h2>
+</body>
+</html>
+
+CTRL + O -> CTRL + X
+
+# Asignar Apache como propietario del segundo sitio.
+sudo chown -R apache:apache /var/www/datos
+
+# Asignar permisos correctos.
+sudo chmod -R 755 /var/www/datos
+
+# Agregar Apache para escuchar también por el puerto 8080.
+# Dentro de /etc/httpd/conf/httpd.conf se añade:
+# Listen 8080
+sudo nano /etc/httpd/conf/httpd.conf
+
+# Crear archivo de configuración del segundo Virtual Host.
+sudo nano /etc/httpd/conf.d/datos.conf
+
+# Dentro poner:
+
+<VirtualHost *:8080>
+    DocumentRoot /var/www/datos
+    DirectoryIndex index.html
+</VirtualHost>
+
+CTRL + O -> CTRL + X
+
+# Validar sintaxis de configuración Apache.
+sudo apachectl configtest
+
+# Reiniciar Apache para aplicar todos los cambios.
+sudo systemctl restart httpd
+
+# Verificar estado final del servicio.
+systemctl status httpd
+
+# Mostrar IP del servidor para acceder desde navegador/host.
+ip a
+
+# Probar sitio principal localmente.
+curl http://127.0.0.1
+
+# Probar segundo sitio en puerto 8080.
+curl http://127.0.0.1:8080
+
+# ----------------------------------------------------------------------------
+# NGINX
+# ----------------------------------------------------------------------------
+
+# En esta práctica NO se utilizó NGINX.
+# Sin embargo, NGINX era una alternativa válida a Apache según el enunciado.
+# Toda la implementación realizada fue usando Apache HTTP Server (httpd).
+
+#---------------------------------
+#  Ejemplo con NGINX
+#---------------------------------
+
+# Instalar el servidor web NGINX.
+# NGINX funcionará como alternativa a Apache para servir contenido web.
+sudo dnf install nginx -y
+
+# Iniciar el servicio NGINX.
+# Esto pone en funcionamiento el servidor web inmediatamente.
+sudo systemctl start nginx
+
+# Habilitar NGINX al arranque.
+# Hace que el servicio inicie automáticamente con el sistema.
+sudo systemctl enable nginx
+
+# Verificar estado del servicio.
+sudo systemctl status nginx
+
+# Abrir el servicio HTTP en el firewall.
+# Permite tráfico web por el puerto 80.
+sudo firewall-cmd --permanent --add-service=http
+
+# Aplicar cambios del firewall.
+sudo firewall-cmd --reload
+
+
+# ----------------------------------------------------------------------------
+# CREAR WEBSITE ESTÁTICO
+# ----------------------------------------------------------------------------
+
+# Crear directorio del sitio web.
+sudo mkdir -p /var/www/misitio
+
+# Crear archivo HTML principal del sitio.
+sudo nano /var/www/misitio/index.html
+
+# Dentro poner:
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mi Website</title>
+</head>
+<body>
+    <h1>Hola Mundo</h1>
+    <h2>Estephani Tavarez Galán</h2>
+    <h2>2025-0723</h2>
+    <h2>Sistemas Operativos</h2>
+</body>
+</html>
+
+CTRL + O -> CTRL + X
+
+# Asignar propietario correcto al contenido web.
+sudo chown -R nginx:nginx /var/www/misitio
+
+# Establecer permisos adecuados de lectura/ejecución.
+sudo chmod -R 755 /var/www/misitio
+
+
+# ----------------------------------------------------------------------------
+# CONFIGURAR HOST VIRTUAL EN NGINX
+# ----------------------------------------------------------------------------
+
+# Crear archivo de configuración del Virtual Host.
+sudo nano /etc/nginx/conf.d/misitio.conf
+
+#Dentro poner:
+
+server {
+    listen 80;
+    server_name _;
+    
+    root /var/www/misitio;
+    index index.html;
+
+    location / {
+        try_files $uri $uri/ =404;
+    }
+}
+
+CTRL + O -> CTRL + X
+
+
+# Validar sintaxis de configuración de NGINX.
+sudo nginx -t
+
+# Reiniciar NGINX para aplicar configuración.
+sudo systemctl restart nginx
+
+# Mostrar IP del servidor.
+ip a
+
+# Probar localmente el sitio web.
+curl http://127.0.0.1
+
+===============================================================================================================================
+Laboratorio 4.2: Instalar un servidor de correos 
+===============================================================================================================================
+1- Instala un servidor SMTP postfix
+2- Enviar un correo de ejemplo al correo del maestro "os3conadrian@gmail.com"  con el asunto "MambruSeFueALaGuerra"(esta practica solo sera corregida si el correo es recibido en el buzon del maestro) y en el cuerpo su nombre y matricula
+
+# Instalar Postfix y herramientas necesarias para autenticación SMTP.
+# postfix           -> Servidor de correo SMTP
+# s-nail            -> Cliente de correo por terminal para enviar emails
+# cyrus-sasl        -> Soporte de autenticación SASL
+# cyrus-sasl-plain  -> Mecanismos de autenticación PLAIN/LOGIN
+dnf install postfix s-nail cyrus-sasl cyrus-sasl-plain -y
+
+# Habilitar e iniciar el servicio Postfix.
+# Esto pone en funcionamiento el servidor SMTP y lo deja persistente al reiniciar.
+systemctl enable --now postfix
+
+# Verificar que Postfix esté ejecutándose correctamente.
+systemctl status postfix
+
+# Editar archivo principal de configuración de Postfix.
+# Aquí se define relay SMTP, autenticación, TLS y demás parámetros del servidor.
+nano /etc/postfix/main.cf
+
+# Configuración típica agregada en /etc/postfix/main.cf
+
+relayhost = [smtp.gmail.com]:587
+# Define el servidor SMTP externo que Postfix usará como relay para enviar correos.
+
+smtp_sasl_auth_enable = yes
+# Habilita autenticación SMTP.
+
+smtp_sasl_password_maps = hash:/etc/postfix/sasl_passwd
+# Indica dónde están almacenadas las credenciales de autenticación.
+
+smtp_sasl_security_options = noanonymous
+# Prohíbe autenticación anónima.
+
+smtp_use_tls = yes
+# Habilita cifrado TLS para el envío de correos.
+
+smtp_tls_security_level = encrypt
+# Obliga a usar cifrado TLS en la conexión SMTP.
+
+#------------------------------------------------
+#Antes de pasar al siguiente paso ir a Gmail
+#------------------------------------------------
+#
+# Inicia sesión en tu cuenta de Google.
+# Ve a Seguridad.
+# Activa la verificación en dos pasos (requisito obligatorio).
+# Luego entra en Contraseñas de aplicaciones.
+# Selecciona o escribe un nombre para la aplicación (por ejemplo: Postfix en Linux).
+# Google generará una contraseña de 16 caracteres.
+# Esa contraseña es la que colocas en sasl_passwd, no tu contraseña normal.
+#
+#------------------------------------------------
+
+
+# Crear archivo con credenciales SMTP del relay.
+# Aquí se almacenan usuario y contraseña del correo que enviará mensajes.
+nano /etc/postfix/sasl_passwd
+
+# Dentro poner:
+[smtp.gmail.com]:587 usuario@gmail.com:contraseña_o_app_password
+
+CTRL + O -> CTRL + X
+
+# Generar base de datos hash del archivo de credenciales.
+# Postfix utilizará este archivo compilado para autenticarse.
+postmap /etc/postfix/sasl_passwd
+
+# Verificar que los archivos fueron creados.
+ls -l /etc/postfix/sasl_passwd*
+
+# Restringir permisos por seguridad.
+# Solo root debe poder leer estos archivos.
+chmod 600 /etc/postfix/sasl_passwd /etc/postfix/sasl_passwd.db
+
+# Asegurar propietario correcto.
+chown root:root /etc/postfix/sasl_passwd /etc/postfix/sasl_passwd.db
+
+# Crear directorio de caché SMTP si no existe.
+mkdir -p /var/lib/postfix
+
+# Generar/actualizar mapa hash de caché SMTP.
+postmap hash:/var/lib/postfix/smtp_scache
+
+# Reiniciar Postfix para aplicar toda la configuración.
+systemctl restart postfix
+
+# Verificar estado final del servicio.
+systemctl status postfix
+
+# Enviar correo de prueba a cuenta personal para validar funcionamiento.
+echo "Correo de prueba para practica 2" | mail -s "Prueba postfix" estephanitavarezgalan@gmail.com
+
+# Monitorear logs de correo en tiempo real.
+# Permite confirmar si el mensaje fue aceptado/entregado.
+tail -f /var/log/maillog
+
+# Enviar correo final solicitado por la práctica al maestro.
+# Asunto requerido: MambruSeFueALaGuerra
+# Cuerpo: Nombre y matrícula del estudiante.
+echo "Estudiante: Estephani Tavarez Galan Matricula: 20250723" | mail -s "MambruSeFueALaGuerra" os3conadrian@gmail.com
+
+# Verificar logs de envío para confirmar entrega.
+tail -f /var/log/maillog
   
  ==============================================================================================
- Comandos Practica 3:
+ Comandos Practica 4.3: Instalar un servidor de Impresion
  ==============================================================================================
 
-  301  sudo dnf install cups -y
-  302  sudo systemctl enable --now cups
-  303  systemctl status cups
-  304  sudo dnf install cups-pdf -y
-  305  sudo firewall-cmd --add-service=ipp --permanent
-  306  sudo firewall-cmd --reload
-  307  sudo firewall-cmd --list-all
-  308  sudo nano /etc/cups/cupsd.conf
-  309  sudo cupsctl --remote-admin --remote-any --share-printers
-  310  sudo systemctl restart cups
-  311  ls /var/spool/cups-pdf/
-  312  date
+1- Instala un servidor de impresiones CUPS ("Common UNIX Printing System")
+2- Instala una IMpresora virtual (PDF) y configurala con CUPS
+3- En su PC cliente, instale la Impresora usando la IP del servidor
+4- Realize una prueba imprimiento un documento de WORD, el mismo debe de salir impreso (en PDF) en nuestra impresora virtual
+
+# Instalar el servidor de impresión CUPS.
+# CUPS (Common UNIX Printing System) permite administrar impresoras locales y de red.
+sudo dnf install cups -y
+
+# Habilitar e iniciar el servicio de CUPS.
+# Esto pone el servidor de impresión en funcionamiento y lo deja persistente al reiniciar.
+sudo systemctl enable --now cups
+
+# Verificar que el servicio esté activo correctamente.
+sudo systemctl status cups
+
+# Instalar la impresora virtual PDF.
+# Esta impresora convierte los trabajos de impresión en archivos PDF en lugar de imprimir físicamente.
+sudo dnf install cups-pdf -y
+
+# Abrir el puerto 631/TCP en el firewall.
+# Este puerto corresponde a la interfaz web y al protocolo IPP de impresión.
+sudo firewall-cmd --add-port=631/tcp --permanent
+sudo firewall-cmd --reload
+
+# Editar el archivo principal de configuración de CUPS.
+# Aquí se habilita acceso remoto y administración desde otras máquinas.
+sudo nano /etc/cups/cupsd.conf
+
+# Dentro agregar los parámetros:
+
+# Configuración principal agregada/modificada en /etc/cups/cupsd.conf
+
+# Permitir que CUPS escuche en todas las interfaces de red, debajo de las líneas existentes LISTEN localhost: puerto, poner:
+Port 631
+
+# Mantener escucha local también
+Listen localhost:631
+
+# En <Location /> poner la red para permitir que cualquier dispositivo en la red tenga acceso:
+
+<Location />
+  Allow from 127.0.0.1
+  Allow from 192.168.1.0/24
+</Location>
+
+<Location /admin>
+  Allow from 127.0.0.1
+  Allow from 192.168.1.0/24
+</Location>
+
+<Location /admin/conf>
+  Allow from 127.0.0.1
+  Allow from 192.168.1.0/24
+</Location>
+
+<Location /printers>
+  Allow from 127.0.0.1
+  Allow from 192.168.1.0/24
+</Location>
+
+CTRL + O -> CTRL + X
+
+# Reiniciar el servicio CUPS para aplicar la nueva configuración.
+sudo systemctl restart cups
+
+# Habilitar administración remota.
+# Permite administrar impresoras desde otros equipos en la red.
+cupsctl --remote-admin
+
+# Permitir acceso remoto desde clientes externos.
+cupsctl --remote-any
+
+# Habilitar compartir impresoras en red.
+cupsctl --share-printers
+
+
+#---------------------------------------------------------------------
+# Configuración de la Impresora Virtual desde la Interfaz Web de CUPS
+#---------------------------------------------------------------------
+
+# Desde el navegador de la PC cliente Windows acceder a:
+# http://IP_DEL_SERVIDOR:631
+
+# Ir a:
+# Administration -> Add Printer
+
+# Seleccionar:
+# CUPS-PDF / PDF Printer
+
+# Asignar nombre a la impresora y marcar:
+# "Share This Printer"
+
+# Elegir controlador:
+# Generic -> Generic CUPS-PDF Printer
+
+# Finalizar con:
+# Add Printer
+
+#----------------------------------------------------------------------------
+# Instalación de la Impresora en el Cliente Windows
+#----------------------------------------------------------------------------
+
+# Copiar la URL generada por CUPS para la impresora creada, por ejemplo:
+# http://192.168.1.8:631/printers/Estephani
+
+# En Windows ir a:
+# Settings -> Devices -> Printers & Scanners
+
+# Seleccionar:
+# Add Printer
+
+# Luego:
+# The printer I want isn't listed
+
+# Escoger:
+# Select a shared printer by name
+
+# Pegar la URL de la impresora CUPS.
+# Si aparece https://, cambiarla manualmente a http:// si es necesario.
+
+# Finalizar el asistente de instalación.
+
+#----------------------------------------------------
+# Prueba de Impresión
+#-----------------------------------------------------
+
+# Desde Windows abrir Microsoft Word.
+
+# Crear documento de prueba con cualquier texto.
+
+# Presionar:
+# Ctrl + P
+
+# Seleccionar la impresora CUPS instalada.
+
+# Hacer clic en:
+# Print
+
+# El trabajo se convertirá en PDF y será almacenado en el servidor.
+
+#------------------------------------------------------------
+# Verificación de Impresión Generada
+#------------------------------------------------------------
+
+# Verificar trabajos completados desde la interfaz web de CUPS:
+# http://IP_DEL_SERVIDOR:631/printers/NOMBRE_IMPRESORA
+
+# También verificar directamente en el servidor Linux:
+ls /var/spool/cups-pdf/ANONYMOUS/
+
+# En esta ruta debe aparecer el archivo PDF generado por la impresión.
 
 
 
