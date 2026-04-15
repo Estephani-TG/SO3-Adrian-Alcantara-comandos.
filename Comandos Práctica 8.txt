@@ -1,72 +1,174 @@
-============================================================================================
+=========================================================================================================================
 Laboratorio 8.1: Instalacion y configuracion de Docker
-============================================================================================
+=========================================================================================================================
 
-# Agregar el repositorio de docker y las herramientas adicionales para manejar repositorios
+1- Instalar Docker en mi servidor
+2- Descargar una Imagen de NGINX web server (desde la Dockerhub)
+3- Crear un contenedor a partir la la imagen de NGINX en a que el puerto 8888 del host sera redireccionado al puerto 80 del contenedor de NGINX, de igual forma montar un volumen persistente /home/website --> /usr/share/nginx/html/
+4- Crear una pagina HTML sencilla la cual tenga su nombre y matricula y nombrarla como index.html, una vez creada copiarla al la ruta del volumen persistente para que la misma puedea ser visualizada por el contenedor (/home/website)
+5- Ingrese al navegador (127.0.0.1:8888) y muestre la pagina que ha creado
 
+# ----------------------------------------------------------------------------
+# EXPLICACION BREVE
+# ----------------------------------------------------------------------------
+
+# Docker permite ejecutar aplicaciones dentro de contenedores aislados.
+# En esta práctica se desplegó NGINX dentro de un contenedor y se publicó
+# una página HTML personalizada usando un volumen persistente del host.
+
+# ----------------------------------------------------------------------------
+# AGREGAR REPOSITORIO OFICIAL DE DOCKER
+# ----------------------------------------------------------------------------
+
+# Instalar herramientas necesarias para administrar repositorios DNF.
 sudo dnf install -y yum-utils
-sudo dnf config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
 
-# Instalar docker
+# Agregar el repositorio oficial de Docker CE para sistemas RHEL/Rocky.
+sudo dnf config-manager \
+--add-repo https://download.docker.com/linux/centos/docker-ce.repo
 
-sudo dnf install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin -y
 
-# Iniciar y habilitar docker
+# ----------------------------------------------------------------------------
+# INSTALAR DOCKER ENGINE Y COMPONENTES NECESARIOS
+# ----------------------------------------------------------------------------
 
+# Instalar Docker Engine, CLI, runtime y plugins adicionales.
+sudo dnf install docker-ce docker-ce-cli containerd.io \
+docker-buildx-plugin docker-compose-plugin -y
+
+
+# ----------------------------------------------------------------------------
+# INICIAR Y HABILITAR EL SERVICIO DOCKER
+# ----------------------------------------------------------------------------
+
+# Iniciar Docker inmediatamente y habilitarlo al arranque.
 sudo systemctl enable --now docker
 
-# Crear el directorio de volumen
+# Verificar que Docker esté funcionando correctamente.
+sudo systemctl status docker
 
+
+# ----------------------------------------------------------------------------
+# CREAR DIRECTORIO PARA VOLUMEN PERSISTENTE
+# ----------------------------------------------------------------------------
+
+# Este directorio almacenará el contenido web fuera del contenedor,
+# permitiendo que sobreviva aunque el contenedor sea eliminado.
 sudo mkdir -p /home/website
 
-# Crear el archivo HTML (index.html)
 
+# ----------------------------------------------------------------------------
+# CREAR PAGINA HTML DEL SITIO WEB
+# ----------------------------------------------------------------------------
+
+# Crear archivo index.html dentro del volumen persistente.
 sudo nano /home/website/index.html
 
+# Contenido del archivo:
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NGINX En Docker</title>
+    <title>NGINX en Docker</title>
 </head>
 <body>
     <h1>Estephani Tavarez Galán</h1>
-    <h1>2025-0723</h1>
+    <h2>2025-0723</h2>
 </body>
 </html>
 
-# Descargar imagen y crear el docker
 
+# ----------------------------------------------------------------------------
+# DESCARGAR IMAGEN Y CREAR CONTENEDOR NGINX
+# ----------------------------------------------------------------------------
+
+# Ejecutar contenedor NGINX:
+# -d              = Modo background
+# --name          = Nombre del contenedor
+# -p 8888:80      = Redirige puerto 8888 host -> 80 contenedor
+# -v              = Monta volumen persistente host -> contenedor
+# :Z              = Ajusta contexto SELinux para contenedores en RHEL
 sudo docker run -d \
   --name SO3-nginx \
   -p 8888:80 \
   -v /home/website:/usr/share/nginx/html:Z \
   nginx:latest
-  
-# Abrir el puerto en el firewall para permitir conexiones por el mismo
 
+
+# ----------------------------------------------------------------------------
+# VERIFICAR CONTENEDOR EN EJECUCION
+# ----------------------------------------------------------------------------
+
+# Listar contenedores activos.
+sudo docker ps
+
+
+# ----------------------------------------------------------------------------
+# ABRIR PUERTO EN FIREWALL
+# ----------------------------------------------------------------------------
+
+# Permitir acceso externo al puerto 8888/TCP.
 sudo firewall-cmd --permanent --add-port=8888/tcp
+
+# Aplicar cambios del firewall.
 sudo firewall-cmd --reload
 
-# Ver contenido en el navegador
 
+# ----------------------------------------------------------------------------
+# PRUEBA FINAL
+# ----------------------------------------------------------------------------
+
+# Acceder desde navegador local o remoto:
 http://127.0.0.1:8888
 
-============================================================================================
+# También puede probarse desde terminal:
+curl http://127.0.0.1:8888
+
+
+=========================================================================================================================
 Laboratorio 8.2: Instalacion de Portainer
-============================================================================================
+=========================================================================================================================
 
-# Descargar la imagen de portainer
+1- Descargar desde la Dockerhub una imagen de portainer intructivo de instalacion AQUI
+2- Crear a partir de la imagen, un contenedor y mapear todos los puertos internos del contenedor a los puertos externos del host
+3- Ingresar a la interfaz de administracion de portainer (127.0.0.1:9443) y vincularla con el Docker Engine que se encuentra corriendo en el host local
+4- Una vez se encuentre conectada, detener el contenedor de GNINX (de la practica previa) a travez de container, muestre el resultado en el navegador Web
 
+# ----------------------------------------------------------------------------
+# EXPLICACION BREVE
+# ----------------------------------------------------------------------------
+
+# Portainer es una interfaz web para administrar Docker gráficamente.
+# Permite crear, detener, reiniciar y monitorear contenedores,
+# imágenes, volúmenes y redes sin usar línea de comandos.
+
+# ----------------------------------------------------------------------------
+# DESCARGAR IMAGEN DE PORTAINER DESDE DOCKER HUB
+# ----------------------------------------------------------------------------
+
+# Descargar imagen oficial de Portainer Community Edition.
 sudo docker pull portainer/portainer-ce
 
-# Crear volumen de datos para portainer
 
+# ----------------------------------------------------------------------------
+# CREAR VOLUMEN PERSISTENTE PARA PORTAINER
+# ----------------------------------------------------------------------------
+
+# Este volumen almacenará configuraciones, usuarios y datos de Portainer.
 sudo docker volume create portainer_data
 
-# Crear el contenedor
 
+# ----------------------------------------------------------------------------
+# CREAR CONTENEDOR DE PORTAINER
+# ----------------------------------------------------------------------------
+
+# Ejecutar Portainer:
+# -p 9443:9443   = Publica interfaz HTTPS de administración
+# --restart      = Reinicia automáticamente al arrancar el host
+# --privileged   = Permisos elevados para mejor compatibilidad
+# docker.sock    = Permite a Portainer administrar Docker local
+# portainer_data = Guarda configuración persistente
 sudo docker run -d \
   -p 9443:9443 \
   --name portainer \
@@ -75,38 +177,140 @@ sudo docker run -d \
   -v /var/run/docker.sock:/var/run/docker.sock \
   -v portainer_data:/data \
   portainer/portainer-ce:latest
-  
-# Abrir el puerto en el firewall
+
+
+# ----------------------------------------------------------------------------
+# VERIFICAR CONTENEDOR EN EJECUCION
+# ----------------------------------------------------------------------------
+
+sudo docker ps
+
+
+# ----------------------------------------------------------------------------
+# ABRIR PUERTO EN FIREWALL
+# ----------------------------------------------------------------------------
 
 sudo firewall-cmd --permanent --add-port=9443/tcp
 sudo firewall-cmd --reload
 
-# Acceder a portainer desde el navegador
 
+# ----------------------------------------------------------------------------
+# ACCESO A INTERFAZ WEB DE PORTAINER
+# ----------------------------------------------------------------------------
+
+# Abrir en navegador:
 https://127.0.0.1:9443
 
-==============================================================================================
+# Puede aparecer advertencia de certificado SSL autofirmado.
+# Seleccionar:
+# Advanced / Continue Anyway
+
+
+# ============================================================================
+# CONFIGURACION INICIAL DE PORTAINER (INTERACTIVO)
+# ============================================================================
+
+# Al abrir Portainer por primera vez:
+
+# 1. Crear usuario administrador:
+#    Username: admin
+#    Password: (definir contraseña segura)
+
+# 2. Pulsar:
+#    Create User
+
+# 3. En la pantalla "Environment Wizard" seleccionar:
+#    Get Started
+
+# 4. Elegir entorno local:
+#    Docker Local
+
+# Portainer se conectará automáticamente al Docker Engine del host
+# usando el socket /var/run/docker.sock montado en el contenedor.
+
+
+# ============================================================================
+# DETENER CONTENEDOR NGINX DESDE PORTAINER
+# ============================================================================
+
+# Dentro de la interfaz web:
+
+# 1. Ir a:
+#    Local -> Containers
+
+# 2. Ubicar contenedor:
+#    SO3-nginx
+
+# 3. Pulsar:
+#    Stop
+
+# El contenedor quedará detenido desde la interfaz gráfica.
+
+
+# ----------------------------------------------------------------------------
+# VERIFICAR RESULTADO
+# ----------------------------------------------------------------------------
+
+# Probar nuevamente en navegador:
+http://127.0.0.1:8888
+
+# Resultado esperado:
+# La página ya no debe cargar porque el contenedor NGINX fue detenido.
+
+
+# También puede validarse por CLI:
+sudo docker ps -a
+
+===============================================================================================================================
 Laboratorio 8.3: Despliegue de contenedor de Wordpress utilizando Docker-Compose 
-==============================================================================================
+===============================================================================================================================
 
-# Instalación de docker compose (se instalo de la practica anterior)
+1- Realize el proceso de instalacion de Docker-compose
+2- Creen un archivo llamado docker-compose.yml donde se especifiquen las Variables de entorno que usaran los contenedores asi como un contenedor par ala BD y uno par ael aplicativo de wordpress
+3- Realize el despliegue de los contenedores utilizando docker compose
+4- Una vez finalizado el despliegue ingrese mediante el navegador y configure wordpress para su correcto uso
+ 
 
-# Verificar la instalación
+# ----------------------------------------------------------------------------
+# EXPLICACION BREVE
+# ----------------------------------------------------------------------------
 
-docker compose version 
+# WordPress es un CMS (Content Management System) que permite crear y
+# administrar sitios web dinámicos sin necesidad de programar.
+# Se usa ampliamente para blogs, páginas corporativas, tiendas online
+# y portales de contenido.
 
-# Crear la carpeta para organizar todos los archivos del proyecto wordpress
+# ----------------------------------------------------------------------------
+# VERIFICAR INSTALACION DE DOCKER COMPOSE
+# ----------------------------------------------------------------------------
 
+# Docker Compose ya fue instalado junto con Docker en prácticas previas.
+# Verificamos que esté disponible correctamente.
+docker compose version
+
+
+# ----------------------------------------------------------------------------
+# CREAR DIRECTORIO DEL PROYECTO WORDPRESS
+# ----------------------------------------------------------------------------
+
+# Crear carpeta donde se almacenarán los archivos del proyecto.
 mkdir ~/mi_wordpress
+
+# Entrar al directorio del proyecto.
 cd ~/mi_wordpress
 
-# Crear el archivo .yml
+
+# ----------------------------------------------------------------------------
+# CREAR ARCHIVO docker-compose.yml
+# ----------------------------------------------------------------------------
 
 nano docker-compose.yml
 
+# Contenido del archivo:
 version: '3.1'
 
 services:
+
   db:
     image: mysql:5.7
     environment:
@@ -117,6 +321,7 @@ services:
     volumes:
       - db_data:/var/lib/mysql
     restart: always
+
 
   wordpress:
     depends_on:
@@ -130,26 +335,121 @@ services:
       WORDPRESS_DB_PASSWORD: wordpress_password
       WORDPRESS_DB_NAME: wordpress_db
     volumes:
-
       - ./wp-content:/var/www/html/wp-content:Z
     restart: always
 
+
 volumes:
   db_data:
-  
-# Configurar el firewall para permitir conexiones por el puerto 8000
+
+
+# ----------------------------------------------------------------------------
+# EXPLICACION DE VARIABLES UTILIZADAS
+# ----------------------------------------------------------------------------
+
+# MYSQL_ROOT_PASSWORD:
+# Contraseña del usuario root de MySQL.
+
+# MYSQL_DATABASE:
+# Base de datos que se creará automáticamente para WordPress.
+
+# MYSQL_USER / MYSQL_PASSWORD:
+# Credenciales que WordPress usará para conectarse a MySQL.
+
+# WORDPRESS_DB_HOST:
+# Nombre del servicio de base de datos dentro de la red Docker.
+
+# depends_on:
+# Garantiza que el contenedor de base de datos inicie antes que WordPress.
+
+# volumes:
+# Permiten persistencia de datos para que la BD y contenido no se pierdan.
+
+
+# ----------------------------------------------------------------------------
+# ABRIR PUERTO EN FIREWALL
+# ----------------------------------------------------------------------------
 
 sudo firewall-cmd --permanent --add-port=8000/tcp
 sudo firewall-cmd --reload
 
-# Desplegar los contenedores
 
+# ----------------------------------------------------------------------------
+# DESPLEGAR CONTENEDORES
+# ----------------------------------------------------------------------------
+
+# Crear e iniciar todos los servicios definidos en docker-compose.yml.
 docker compose up -d
+
+# Verificar estado de los contenedores.
 docker compose ps -a
 
-# Acceder desde el navegador
 
+# ----------------------------------------------------------------------------
+# ACCESO INICIAL A WORDPRESS
+# ----------------------------------------------------------------------------
+
+# Abrir navegador:
 http://192.168.1.200:8000
 
+# O localmente:
+http://127.0.0.1:8000
 
 
+# ============================================================================
+# CONFIGURACION INICIAL DE WORDPRESS (INTERACTIVO)
+# ============================================================================
+
+# Al abrir WordPress por primera vez:
+
+# 1. Seleccionar idioma del sitio.
+
+# 2. Pulsar:
+#    Continuar
+
+# 3. Completar información del sitio:
+#    - Título del sitio web
+#    - Usuario administrador
+#    - Contraseña
+#    - Correo electrónico administrador
+
+# 4. Pulsar:
+#    Instalar WordPress
+
+# 5. Iniciar sesión en el panel administrativo.
+
+
+# ============================================================================
+# QUE SE PUEDE HACER DENTRO DE WORDPRESS
+# ============================================================================
+
+# Una vez instalado, WordPress permite:
+
+# - Crear páginas estáticas:
+#   Inicio, Contacto, Nosotros, Servicios, etc.
+
+# - Crear publicaciones/blog:
+#   Noticias, artículos o entradas cronológicas.
+
+# - Instalar temas:
+#   Cambiar completamente el diseño visual del sitio.
+
+# - Instalar plugins:
+#   Agregar funciones como formularios, tiendas, SEO, seguridad, etc.
+
+# - Gestionar usuarios:
+#   Administradores, editores, autores y colaboradores.
+
+# - Subir contenido multimedia:
+#   Imágenes, videos, documentos y galerías.
+
+
+# ----------------------------------------------------------------------------
+# VALIDACION FINAL
+# ----------------------------------------------------------------------------
+
+# El sitio WordPress debe mostrarse funcional en navegador
+# y accesible desde la URL configurada.
+
+# El panel de administración se accede mediante:
+http://192.168.1.200:8000/wp-admin
