@@ -358,13 +358,51 @@ doctl compute image list
 
 # Instalarlo
 sudo dnf install snapd -y
+
+# Activar y verificar el estatus
+sudo systemctl enable --now snapd.socket
+systemctl status snapd.socket
+
+# Crear enlace simbolico
+sudo ln -s /var/lib/snapd/snap /snap
+
+# Reiniciar el server para evitar problemas con el path
+reboot
+
+# Ahora sí instala doctl
 sudo snap install doctl
+
+# Verificar que existe
+doctl version
 
 # Autenticarlo
 doctl auth init
 
 # Luego se puede ejecutar:
 doctl compute image list
+
+# una alternativa es:
+sudo dnf install wget -y
+
+wget https://github.com/digitalocean/doctl/releases/download/v1.104.0/doctl-1.104.0-linux-amd64.tar.gz
+
+tar xf doctl-1.104.0-linux-amd64.tar.gz
+
+sudo mv doctl /usr/local/bin
+
+# Verificar que existe y si no da error pasar a lo siguiente
+doctl version
+
+# Dar permisos
+chmod +x /usr/local/bin/doctl
+
+# Autenticarlo 
+doctl auth init
+
+# y luego podremos usar esos comandos
+# doctl compute image list
+# doctl compute droplet create
+# doctl account get
 
 # -----------------------------------------------------------------------------------
 # CAMBIAR NOMBRE DE LA MÁQUINA
