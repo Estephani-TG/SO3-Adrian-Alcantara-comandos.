@@ -1,0 +1,211 @@
+==================================================================================================================================
+Laboratorio 3.1: Configuración de GRUB y Recuperación de Contraseña Root en RHEL
+==================================================================================================================================
+
+# Abrir el archivo principal de configuración de GRUB.
+# Desde aquí se controlan los parámetros generales del cargador de arranque.
+sudo nano /etc/default/grub
+
+
+# Contenido principal del archivo /etc/default/grub y explicación:
+
+GRUB_TIMEOUT=20
+# Tiempo (en segundos) que el menú de GRUB permanecerá visible antes de arrancar automáticamente.
+# En esta práctica se modificó de su valor por defecto a 20 segundos.
+
+GRUB_DISTRIBUTOR="$(sed 's, release .*$,,g' /etc/system-release)"
+# Define el nombre de la distribución que aparecerá en el menú de arranque.
+
+GRUB_DEFAULT=saved
+# Indica que se iniciará la última entrada de arranque seleccionada.
+
+GRUB_DISABLE_SUBMENU=true
+# Evita que GRUB agrupe kernels en submenús.
+
+GRUB_TERMINAL_OUTPUT="console"
+# Define que la salida de GRUB se mostrará en consola de texto.
+
+GRUB_CMDLINE_LINUX="rhgb quiet"
+# Parámetros que se pasan al kernel al arrancar:
+# rhgb = Red Hat Graphical Boot
+# quiet = Reduce mensajes mostrados durante el arranque
+
+GRUB_DISABLE_RECOVERY="true"
+# Oculta entradas de recuperación en el menú de GRUB.
+
+
+# Regenerar el archivo de configuración de GRUB para aplicar cambios.
+sudo grub2-mkconfig -o /boot/grub2/grub.cfg
+
+# Verificar que el nuevo timeout fue aplicado correctamente.
+grep GRUB_TIMEOUT /etc/default/grub
+
+-----------------------------------------------------------
+### Método de Recuperación de Contraseña Root en RHEL ###
+-----------------------------------------------------------
+
+# Reiniciar y presionar [e] sobre la entrada de Linux.
+
+# Buscar la línea que empieza con "linux".
+
+# Presionar [Ctrl + e] para ir al final de la línea y agregar:
+rd.break
+
+# Presionar [Ctrl + x] para iniciar el sistema con los parámetros modificados.
+
+
+# Montar el sistema raíz en modo lectura/escritura.
+mount -o remount,rw /sysroot
+
+# Entrar al sistema real usando chroot.
+chroot /sysroot
+
+# Restablecer la contraseña del usuario root.
+passwd
+
+# Etiquetar SELinux para evitar errores de permisos al reiniciar.
+touch /.autorelabel
+
+# Salir del entorno chroot.
+exit
+
+# Salir de switch_root.
+exit
+
+# Esperar a que finalice el reetiquetado de SELinux.
+# La máquina se reiniciará automáticamente al concluir el proceso.
+
+===================================================================================================================================
+Laboratorio 3.2: Creación de Scripts Bash para Backup e Información de Red
+===================================================================================================================================
+
+1- Crear un script que haga un backup creando un comprimido utilizando TAR de la carpeta /home/(tu_usuario). el nombre del archivo debe de tener la fecha y la hora actual en formato dd-mm-yyyy:hh:mm
+2- Crear un script que copie el resultado del comando ifconfig en un archivo en el escritorio. El script debe de preguntar cual nombre desea ponerle al archivo y crear el archivo con el nombre provisto
+
+-----------------------------------------------------------------------------------------------------------------------------
+## Un Shell Script es un archivo con comandos de Bash que automatiza tareas ejecutándolas en orden de forma automática. ###
+### Un backup comprimido sirve para crear una copia de seguridad de archivos ocupando menos espacio, permitiendo guardarlos y recuperarlos fácilmente en caso de pérdida o daño.###
+-----------------------------------------------------------------------------------------------------------------------------
+
+# Crear el archivo del script de respaldo.
+# Aquí se escribirá la lógica para comprimir /home/(usuario) con fecha y hora actual.
+nano backup_hom.sh
+
+# Dentro del archivo poner
+
+#!/bin/bash
+
+# Obtener fecha y hora actual en formato dd-mm-yyyy_hh-mm
+FECHA=$(date +"%d-%m-%Y_%H-%M")
+
+# Crear backup comprimido de la carpeta home del usuario actual usando tar
+tar -czvf "$HOME/backup_home_$FECHA.tar.gz" "$HOME"
+
+CTRL + O -> CTRL +X
+
+# Ejecutar el script manualmente usando bash.
+# Esto permite probar el script sin necesidad de permisos de ejecución.
+bash backup_hom.sh
+
+# Dar permisos de ejecución al script.
+# Esto permite ejecutarlo directamente como programa.
+chmod +x backup_hom.sh
+
+# Ejecutar el script directamente.
+./backup_hom.sh
+
+# Crear el segundo script que exportará el resultado de ifconfig al escritorio.
+nano ifconfig_Escritorio.sh
+
+# Dentro poner:
+
+#!/bin/bash
+
+# Solicitar al usuario el nombre que desea para el archivo.
+echo "Ingrese el nombre que desea para el archivo:"
+read NOMBRE
+
+# Guardar la salida de ifconfig en un archivo dentro del escritorio con el nombre indicado.
+ifconfig > "$HOME/Escritorio/${NOMBRE}.txt"
+
+CTRL + O -> CTRL +X
+
+# Dar permisos de ejecución al segundo script.
+chmod +x ifconfig_Escritorio.sh
+
+# Ejecutar el script.
+./ifconfig_Escritorio.sh
+
+# Listar contenido del escritorio para verificar que el archivo fue creado.
+ls ~/Escritorio
+
+
+=====================================================================================================================================
+Laboratorio 3.3: Configuración de SSH y Autenticación con Llaves Públicas/Privadas
+=====================================================================================================================================
+
+# Validar conectividad de red entre la máquina host y la VM Linux.
+
+# Mostrar la dirección IP actual de la VM Linux.
+# Permite identificar la IP asignada a la interfaz de red.
+ip a
+
+# Desde Windows se realiza ping a la IP de la VM para comprobar que el modo Bridge funciona.
+ping 192.168.1.20
+
+# Instalar el servidor SSH en la VM Linux.
+# Esto habilita la capacidad de recibir conexiones remotas por SSH.
+sudo dnf install openssh-server -y
+
+# Iniciar el servicio SSH.
+# Activa el demonio sshd para aceptar conexiones remotas.
+sudo systemctl start sshd
+
+# Habilitar el servicio SSH al arranque.
+# Hace que SSH inicie automáticamente cada vez que el sistema arranque.
+sudo systemctl enable sshd
+
+# Verificar que el servicio SSH esté funcionando correctamente.
+sudo systemctl status sshd
+
+# Crear el directorio .ssh en el home del usuario.
+# Aquí se almacenarán llaves autorizadas y configuraciones SSH.
+mkdir ~/.ssh
+
+# Entrar al directorio .ssh.
+cd ~/.ssh
+
+# Crear/editar el archivo authorized_keys.
+# Aquí se pega la llave pública generada en Windows para permitir autenticación por clave.
+nano authorized_keys
+
+-------------------------------------------------------------------------
+# Comandos Realizados en la Máquina Host Windows
+-------------------------------------------------------------------------
+
+# Mostrar configuración de red del host Windows.
+# Permite validar la IP del host y la red donde está conectado.
+ipconfig
+
+# Validar conectividad con la VM Linux.
+ping 192.168.1.20
+
+# Probar conexión SSH tradicional con usuario y contraseña.
+# Se utiliza antes de configurar autenticación por llave.
+ssh egalan@192.168.1.20
+
+# Generar par de llaves pública/privada.
+# Durante el proceso:
+# - Se especifica la ruta donde guardar las llaves.
+# - Se deja el passphrase en blanco.
+ssh-keygen
+
+# Abrir la llave pública generada para copiar su contenido.
+# Normalmente ubicada en el directorio .ssh del usuario Windows.
+notepad C:\Users\User\.ssh\id_ed25519.pub
+
+# Copiamos esa llave y la pegamos en la VM Linux
+
+# Probar conexión SSH nuevamente.
+# Si la configuración fue correcta, el acceso será automático sin pedir contraseña.
+ssh egalan@192.168.1.20
